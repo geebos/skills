@@ -1,147 +1,136 @@
 ---
 name: git-commit
-description: Generate Git commit messages following the Conventional Commits specification. Use when the user wants to create commits, generate commit messages, or mentions "commit", "conventional commit", or needs to write commit messages.
+description: Create Git commits using Conventional Commits. Use when the user asks to commit changes, generate a commit message, or mentions commit, commits, git commit, or conventional commit.
 ---
 
-# Git Commit Message Generator
+# Git Commit
 
-## Quick start
+Use Conventional Commits:
 
-Generate a commit message by analyzing staged changes (`git diff --staged`) and crafting a conventional commit.
-
-## Format
-
-```
-<type>(<scope>): <subject>
+```text
+<type>[optional scope]: <description>
 
 [optional body]
-[optional footer]
+
+[optional footer(s)]
 ```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
+
+## Examples
+
+- No body: `docs: correct spelling in changelog`
+- With scope: `feat(lang): add zh-CN locale`
+- Breaking change with `!`: `feat(api)!: require signed webhook payloads`
+- Breaking change footer:
+  ```text
+  feat: support shared configuration presets
+
+  BREAKING CHANGE: preset resolution now starts from the project root.
+  ```
+- Body and footers:
+  ```text
+  fix: prevent duplicate requests
+
+  Track the latest request id and ignore stale responses.
+
+  Reviewed-by: Core Team
+  Refs: #123
+  ```
 
 ## Rules
 
-### type (required)
-
-Must be one of:
-
-```
-feat | fix | docs | style | refactor | perf | test | build | ci | chore | revert
-```
-
-### scope (optional)
-
-The affected module or feature name, in lowercase English.
-
-### subject (required)
-
-A concise, clear description of the change. Max 50 characters. No leading capital letter. No trailing period.
-
-### body (optional)
-
-Motivation for the change and details of what was modified. Each line max 72 characters.
-
-### footer (optional)
-
-Use for `BREAKING CHANGE:` notices or issue references (e.g., `Closes #123`).
-
-## Multiple Change Types
-
-When changes span multiple types, create separate commits in the order listed above.
+- Commit directly when the user asks to commit; do not ask for confirmation.
+- If the user only asks for a message, output the message and do not commit.
+- Keep one logical change per commit; split large or mixed changes by scope in dependency order.
+- Use lowercase scopes; write `description` as an imperative, lowercase summary with no trailing period.
+- Use the commands below; avoid alternate git workflows.
 
 ## Workflow
 
-### Step 1: Review staged changes
-
+### 1. Inspect changes
 ```bash
+# Show changed files and staging state.
+git status --short
+
+# Review unstaged changes before deciding commit scope.
+git diff
+
+# Review already staged changes.
 git diff --staged
+
+# Match the repository's recent commit style when useful.
+git log --oneline -5
 ```
 
-Examine what files and changes are staged. If nothing is staged, run `git status` first.
-
-### Step 2: Inspect commit history
-
+### 2. Plan scopes
 ```bash
-git log --oneline -10
+# List changed files to group related changes.
+git diff --name-only
+
+# Inspect one file when deciding its scope.
+git diff -- path/to/file
+```
+Commit order example:
+```text
+build/config -> core logic -> callers/ui -> tests -> docs
 ```
 
-Identify the repo's commit conventions — prefix style, language, verb form, etc.
-
-### Step 3: Stage files (if needed)
-
-Only stage related changes together. Use one of:
-
+### 3. Stage one scope
 ```bash
-# Stage specific files
+# Stage only files that belong in the same commit.
 git add path/to/file1 path/to/file2
 
-# Stage all changes in current directory
-git add .
+# Check which staged files will be committed.
+git diff --staged --stat
 
-# Stage all tracked files
-git add -u
+# Review staged content before committing.
+git diff --staged
+
+# Unstage a file that does not belong in this commit.
+git restore --staged path/to/file
 ```
 
-**Never** blindly use `git add .` — always review what's being staged first.
-
-### Step 4: Determine type and scope
-
-Example categorizations:
-
-| Change | Type | Example scope |
-|---|---|---|
-| New feature | `feat` | `api`, `auth`, `ui` |
-| Bug fix | `fix` | `parser`, `login`, `cache` |
-| Docs only | `docs` | `readme`, `api-docs` |
-| Code style | `style` | `lint`, `formatting` |
-| Refactor | `refactor` | `utils`, `hooks` |
-| Performance | `perf` | `queries`, `rendering` |
-| Tests | `test` | `unit`, `e2e` |
-| Build/CI | `build` / `ci` | `webpack`, `docker` |
-| Chores | `chore` | `deps`, `config` |
-| Revert | `revert` | — |
-
-### Step 5: Draft the commit message
-
-Example messages:
-
-```
-feat(auth): add OAuth2 login support
-fix(parser): handle empty input gracefully
-refactor(utils): extract date formatting helper
-docs(readme): update installation instructions
-chore(deps): bump lodash to 4.17.21
-```
-
-### Step 6: Present for review
-
-Show the drafted message and wait for user approval. The **only** commit command to use is:
-
+### 4. Commit directly
 ```bash
-git commit -m "<type>(<scope>): <subject>" -m "<optional body>"
+# Commit a simple docs-only change.
+git commit -m "docs: correct spelling in changelog"
+
+# Commit a scoped feature.
+git commit -m "feat(lang): add zh-CN locale"
+
+# Commit a breaking API change.
+git commit -m "feat(api)!: require signed webhook payloads"
 ```
+Choose the matching command form and commit without asking for confirmation.
 
-Or for multi-line messages:
-
+For a multi-line message, use one `-m` per paragraph. Git inserts blank lines
+between `-m` values. Use `$'...\n...'` when one paragraph needs line breaks
+without blank lines:
 ```bash
-git commit -m "feat(auth): add OAuth2 login support" \
-  -m "Implements authorization code grant flow.
-Requires client_id and client_secret configuration."
+# Create subject, body, and footer blocks without opening an editor.
+git commit \
+  -m "fix: prevent duplicate requests" \
+  -m $'Track the latest request id.\nIgnore stale responses from older requests.' \
+  -m $'Reviewed-by: Core Team\nRefs: #123'
 ```
 
-## Forbidden commands
+### 5. Repeat and verify
+```bash
+# Confirm remaining uncommitted changes.
+git status --short
 
-**Never** use any of these unless the user explicitly requests:
+# Stage the next scope.
+git add path/to/next-file
 
-- `git commit --amend` — rewrites history
-- `git commit --no-verify` / `-n` — skips hooks
-- `git push` / `git push --force` / `git push -f`
-- `git rebase` / `git reset` / `git cherry-pick` / `git stash`
-- `git tag` / `git branch -D` / `git clean`
-- Any command with `--force`, `-f`, `--hard`, or `--delete`
+# Commit the next scope.
+git commit -m "test(scope): cover changed behavior"
 
-## Tips
+# Verify the new commits.
+git log --oneline -5
+```
 
-- Default working directory is the current directory
-- Never commit without user approval — show the message first
-- If no changes are staged, remind the user to stage files first
-- Keep commits focused: one logical change per commit
+## Safety
+
+Do not run unless the user explicitly asks: `git push`, `git commit --amend`, `git commit --no-verify`, `git rebase`, `git reset`, `git cherry-pick`, `git stash`, `git clean`, or `git tag`.
+Do not use commands with `--force`, `-f`, `--hard`, or `--delete`.
