@@ -1,0 +1,4 @@
+interface:
+  display_name: "Technical Document Review"
+  short_description: "Run deterministic two-agent technical document reviews"
+  default_prompt: "Use $technical-doc-review to review this technical document until every issue is closed."

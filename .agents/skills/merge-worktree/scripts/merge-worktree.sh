@@ -58,6 +58,35 @@ if [ -z "$current_branch" ]; then
   exit 1
 fi
 
+git_common_dir=$(git rev-parse --git-common-dir)
+case "$git_common_dir" in
+  /*) ;;
+  *) git_common_dir=$(cd "$git_common_dir" && pwd -P) ;;
+esac
+
+lock_dir="$git_common_dir/merge-worktree.lock"
+lock_owner_file="$lock_dir/owner"
+
+release_lock() {
+  rm -f "$lock_owner_file"
+  rmdir "$lock_dir" 2>/dev/null || true
+}
+
+if ! mkdir "$lock_dir" 2>/dev/null; then
+  echo "Another merge-worktree process holds the repository lock: $lock_dir" >&2
+  if [ -r "$lock_owner_file" ]; then
+    echo "Lock owner:" >&2
+    sed 's/^/  /' "$lock_owner_file" >&2
+  fi
+  exit 1
+fi
+
+trap release_lock EXIT
+printf 'pid=%s\nworktree=%s\nbranch=%s\n' \
+  "$$" \
+  "$current_worktree" \
+  "$current_branch" >"$lock_owner_file"
+
 if [ "$current_branch" = "main" ]; then
   if git diff --cached --quiet; then
     echo "Main has no staged changes to commit." >&2
@@ -96,7 +125,41 @@ if ! git show-ref --verify --quiet refs/heads/main; then
   exit 1
 fi
 
+main_worktree=$(
+  git worktree list --porcelain |
+    awk '
+      /^worktree / { path = substr($0, 10) }
+      /^branch refs\/heads\/main$/ { print path; exit }
+    '
+)
+
+worktree_count=$(
+  git worktree list --porcelain |
+    awk '/^worktree / { count++ } END { print count + 0 }'
+)
+
+if [ -n "$main_worktree" ]; then
+  mode="main-worktree"
+
+  if [ -n "$(git -C "$main_worktree" status --porcelain)" ]; then
+    echo "Main worktree must be clean before squash merge: $main_worktree" >&2
+    exit 1
+  fi
+elif [ "$worktree_count" -eq 1 ]; then
+  mode="single-worktree"
+  main_worktree=$dev_worktree
+else
+  echo "Local main is not checked out and multiple worktrees exist; cannot select a merge target." >&2
+  exit 1
+fi
+
 main_before=$(git rev-parse refs/heads/main)
+if [ "$mode" = "main-worktree" ] &&
+  [ "$(git -C "$main_worktree" rev-parse HEAD)" != "$main_before" ]; then
+    echo "Main worktree HEAD does not match refs/heads/main: $main_worktree" >&2
+    exit 1
+fi
+
 git rebase main
 
 if [ -n "$test_command" ]; then
@@ -119,23 +182,17 @@ if [ "$(git rev-parse refs/heads/main)" != "$main_before" ]; then
   exit 1
 fi
 
-main_worktree=$(
-  git worktree list --porcelain |
-    awk '
-      /^worktree / { path = substr($0, 10) }
-      /^branch refs\/heads\/main$/ { print path; exit }
-    '
-)
-
-if [ -n "$main_worktree" ]; then
-  mode="separate-main-worktree"
+if [ "$mode" = "main-worktree" ]; then
   if [ -n "$(git -C "$main_worktree" status --porcelain)" ]; then
-    echo "Main worktree must be clean before squash merge: $main_worktree" >&2
+    echo "Main worktree changed during rebase or testing: $main_worktree" >&2
+    exit 1
+  fi
+
+  if [ "$(git -C "$main_worktree" rev-parse HEAD)" != "$main_before" ]; then
+    echo "Main worktree HEAD changed during rebase or testing: $main_worktree" >&2
     exit 1
   fi
 else
-  mode="single-worktree"
-  main_worktree=$dev_worktree
   git switch main
 fi
 
@@ -153,6 +210,7 @@ commit_sha=$(git -C "$main_worktree" rev-parse HEAD)
 
 echo "MODE=$mode"
 echo "MAIN_WORKTREE=$main_worktree"
+echo "MAIN_REF=refs/heads/main"
 echo "DEV_WORKTREE=$dev_worktree"
 echo "DEV_BRANCH=$dev_branch"
 echo "COMMIT=$commit_sha"
