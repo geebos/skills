@@ -16,11 +16,13 @@ description: 以严格的追加-only 方式评审技术文档：固定一名 Rev
 
 操作细则：
 
-- [agents/technical-doc-review-coordinator.toml](agents/technical-doc-review-coordinator.toml)
+- [agents/technical-doc-review-coordinator.toml](agents/technical-doc-review-coordinator.toml)（调度；勿让 worker 阅读调度内容）
 - [agents/technical-doc-reviewer.toml](agents/technical-doc-reviewer.toml)
 - [agents/technical-doc-answerer.toml](agents/technical-doc-answerer.toml)
 
-文档结构与完成门禁见 [references/review-protocol.md](references/review-protocol.md)。模板见 [assets/review-document-template.md](assets/review-document-template.md)。
+worker 共用的文档结构、状态与质量标准见 [references/review-protocol.md](references/review-protocol.md)（**不含**协调/恢复逻辑）。模板见 [assets/review-document-template.md](assets/review-document-template.md)。
+
+向 `technical_doc_reviewer` / `technical_doc_answerer` 下发任务时，提示中**不要**提及另一方的名称或职责；二者只通过评审文档内容与结果信封间接协作。
 
 ## 启动
 
