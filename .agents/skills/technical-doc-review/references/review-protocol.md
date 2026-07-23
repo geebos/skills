@@ -118,7 +118,8 @@
 
 ## 6. Git 语义
 
-- 分支：`review/<document-name>`，自最新基线（默认 `main`）。两 worker 同 worktree、同分支、串行。
+- **分支预检**由 skill 调用方在启动协调者之前完成：干净工作区 → 基线（默认 `main`）pull → 创建/切换 `review/<document-name>` → 记录起始 commit → 必要时复制评审模板。协调者与 worker 不再做预检。
+- 两 worker 同 worktree、同 review 分支、串行。
 - 轮次 commit：仅 reviewer 在扫描→回答→编辑→核实→记录→状态更新完成后执行；只 `git add` 技术文档与评审文档。
 - 消息：`docs(<document-name>): complete review round <N>`
 - 不要在 review 分支上 squash 多轮。
