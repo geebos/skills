@@ -1,4 +1,4 @@
 interface:
   display_name: "技术文档评审"
-  short_description: "运行确定性的双 agent 技术文档评审"
-  default_prompt: "使用 $technical-doc-review 评审这份技术文档，直到所有问题关闭。"
+  short_description: "启动协调者，调度双 agent 完成技术文档评审"
+  default_prompt: "使用 $technical-doc-review 启动协调者评审这份技术文档，直到所有问题关闭。"
