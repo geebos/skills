@@ -13,11 +13,6 @@
       "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
       "computedHash": "ef32aea0a8fab9b365ff9e08a95f8d353e20ca21ea46ec2e73587c86dd341351"
     },
-    "merge-worktree": {
-      "source": ".agents/skills/merge-worktree",
-      "sourceType": "local",
-      "computedHash": "f433ba62177d4575e70344e37fc70e0572ad881584ce476c233f0251bac688c7"
-    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",
