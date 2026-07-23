@@ -1,6 +1,7 @@
 .PHONY: add sync
 
 SKILLS_NPM_CACHE ?= $(if $(TMPDIR),$(TMPDIR),/tmp/)skills-npm-cache
+SYNC_HOME ?= $(HOME)
 
 # Usage:
 #   make add vercel-labs/agent-skills
@@ -24,11 +25,11 @@ add:
 	@echo "Done. Skills are in ./.agents"
 
 sync:
-	mkdir -p .agents .claude .pi
-	cp AGENTS.md .agents/AGENTS.md
-	ln -sfn ../.agents/AGENTS.md .claude/claude.md
-	ln -sfn ../.agents/AGENTS.md .pi/AGENTS.md
-	npm_config_cache="$(SKILLS_NPM_CACHE)" npx --yes skills update --project --yes
+	mkdir -p "$(SYNC_HOME)/.agents" "$(SYNC_HOME)/.claude" "$(SYNC_HOME)/.pi"
+	cp AGENTS.md "$(SYNC_HOME)/.agents/AGENTS.md"
+	ln -sfn ../.agents/AGENTS.md "$(SYNC_HOME)/.claude/claude.md"
+	ln -sfn ../.agents/AGENTS.md "$(SYNC_HOME)/.pi/AGENTS.md"
+	npm_config_cache="$(SKILLS_NPM_CACHE)" npx --yes skills update --global --yes
 
 %:
 	@:
