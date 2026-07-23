@@ -1,4 +1,0 @@
-interface:
-  display_name: "Cloudflare Project Init"
-  short_description: "Initialize Cloudflare full-stack apps"
-  default_prompt: "Use $cloudflare-project-init to scaffold a single-package Cloudflare project with Next.js Pages Router, Hono APIs, wrangler.jsonc, shadcn/ui, Drizzle, and pnpm."
