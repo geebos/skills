@@ -71,7 +71,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Complete and Merge
 
-After development is complete, read and follow the [merge-worktree skill](.agents/skills/merge-worktree/SKILL.md). Run its script with the development worktree as the execution directory and provide the squash commit message and test command.
+After development is complete, read and follow the [merge-worktree skill](.agents/skills/merge-worktree/SKILL.md). Run its script with the current worktree as the execution directory and provide the commit message and optional test command.
 
 # Addressing Convention
 

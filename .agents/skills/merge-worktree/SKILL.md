@@ -1,6 +1,6 @@
 ---
 name: merge-worktree
-description: Rebase a completed development worktree branch onto local main, run a supplied test command, and squash-commit it into the main worktree through a validated script. Use when tested development work in a Git worktree is ready to merge into local main or when AGENTS.md invokes merge-worktree.
+description: Commit staged changes directly on local main, or rebase a completed development branch onto local main, optionally test it, and squash-commit it in single- or multi-worktree repositories. Use when local work is ready to commit or merge into main, or when AGENTS.md invokes merge-worktree.
 ---
 
 # Merge Worktree
@@ -21,14 +21,17 @@ The squash commit message must use Conventional Commits and list every meaningfu
 
 ## Workflow
 
-1. Ensure every development change is committed.
-2. Compose the complete squash commit message and select the required test command.
-3. Run the script with the development worktree path as the execution directory. Pass the commit message and test command:
+1. Compose the complete commit message and select an optional test command.
+2. Use the current worktree as the execution directory:
+   - On `main`, stage exactly the changes to commit. Leave no unstaged or untracked files.
+   - On a development branch, commit every change and leave the worktree clean.
+3. Run the script:
    ```bash
    bash .agents/skills/merge-worktree/scripts/merge-worktree.sh \
      --message "<conventional-commit-message>" \
      --test-command "<test-command>"
    ```
-4. Report the resulting commit and test status. Do not fetch, pull, push, delete branches, or remove worktrees.
+   Omit `--test-command` when no test is required.
+4. Report the resulting mode, commit, and test status. Do not fetch, pull, push, delete branches, or remove worktrees.
 
-The script validates clean worktrees, rebases the development branch onto local `main`, runs the supplied test command in the development worktree, locates the `main` worktree, performs `merge --squash`, and creates the supplied commit.
+On `main`, the script commits staged changes directly. On a development branch, it rebases onto local `main`, runs the optional test, then squash-merges into an existing `main` worktree or switches the single worktree to `main` before committing.
