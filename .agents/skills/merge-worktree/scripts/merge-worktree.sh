@@ -64,6 +64,9 @@ case "$git_common_dir" in
   *) git_common_dir=$(cd "$git_common_dir" && pwd -P) ;;
 esac
 
+current_git_dir=$(git rev-parse --absolute-git-dir)
+current_git_dir=$(cd "$current_git_dir" && pwd -P)
+
 lock_dir="$git_common_dir/merge-worktree.lock"
 lock_owner_file="$lock_dir/owner"
 
@@ -145,11 +148,15 @@ if [ -n "$main_worktree" ]; then
     echo "Main worktree must be clean before squash merge: $main_worktree" >&2
     exit 1
   fi
-elif [ "$worktree_count" -eq 1 ]; then
-  mode="single-worktree"
+elif [ "$current_git_dir" = "$git_common_dir" ]; then
+  if [ "$worktree_count" -eq 1 ]; then
+    mode="single-worktree"
+  else
+    mode="primary-worktree"
+  fi
   main_worktree=$dev_worktree
 else
-  echo "Local main is not checked out and multiple worktrees exist; cannot select a merge target." >&2
+  echo "Local main is not checked out and the current worktree is linked; run from the primary worktree." >&2
   exit 1
 fi
 
@@ -162,10 +169,33 @@ fi
 
 git rebase main
 
+temp_branch="merge-worktree/squash-$$"
+if git show-ref --verify --quiet "refs/heads/$temp_branch"; then
+  echo "Temporary branch already exists: $temp_branch" >&2
+  exit 1
+fi
+
+git switch -c "$temp_branch" main
+
+if ! git merge --squash "$dev_branch"; then
+  echo "Squash merge failed on temporary branch: $temp_branch" >&2
+  echo "Local main was not modified." >&2
+  exit 1
+fi
+
+if ! git commit -m "$commit_message"; then
+  echo "Commit failed on temporary branch: $temp_branch" >&2
+  echo "Local main was not modified." >&2
+  exit 1
+fi
+
+commit_sha=$(git rev-parse HEAD)
+
 if [ -n "$test_command" ]; then
   echo "Running test command: $test_command"
   if ! bash -c "$test_command"; then
-    echo "Test command failed. Local main was not modified." >&2
+    echo "Test command failed on temporary branch: $temp_branch" >&2
+    echo "Local main was not modified." >&2
     exit 1
   fi
 else
@@ -173,7 +203,7 @@ else
 fi
 
 if [ -n "$(git status --porcelain)" ]; then
-  echo "Test command left the development worktree dirty. Local main was not modified." >&2
+  echo "Test command left the temporary branch dirty. Local main was not modified." >&2
   exit 1
 fi
 
@@ -192,25 +222,25 @@ if [ "$mode" = "main-worktree" ]; then
     echo "Main worktree HEAD changed during rebase or testing: $main_worktree" >&2
     exit 1
   fi
-else
+fi
+
+git switch "$dev_branch"
+
+if [ "$mode" != "main-worktree" ]; then
   git switch main
 fi
 
-if ! git -C "$main_worktree" merge --squash "$dev_branch"; then
-  echo "Squash merge failed. Resolve or restore the main worktree manually: $main_worktree" >&2
+if ! git -C "$main_worktree" merge --ff-only "$temp_branch"; then
+  echo "Fast-forward merge failed. Local main may require review: $main_worktree" >&2
   exit 1
 fi
 
-if ! git -C "$main_worktree" commit -m "$commit_message"; then
-  echo "Commit failed. Review the staged squash changes in: $main_worktree" >&2
-  exit 1
-fi
-
-commit_sha=$(git -C "$main_worktree" rev-parse HEAD)
+git -C "$main_worktree" branch -d "$temp_branch"
 
 echo "MODE=$mode"
 echo "MAIN_WORKTREE=$main_worktree"
 echo "MAIN_REF=refs/heads/main"
 echo "DEV_WORKTREE=$dev_worktree"
 echo "DEV_BRANCH=$dev_branch"
+echo "TEMP_BRANCH=$temp_branch"
 echo "COMMIT=$commit_sha"
