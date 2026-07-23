@@ -16,7 +16,7 @@
     "merge-worktree": {
       "source": ".agents/skills/merge-worktree",
       "sourceType": "local",
-      "computedHash": "9737a7a6dd60d6409a740cd9a8576f81744f17aa1a1b1912675bc77947ebfafe"
+      "computedHash": "f433ba62177d4575e70344e37fc70e0572ad881584ce476c233f0251bac688c7"
     },
     "shadcn": {
       "source": "shadcn/ui",

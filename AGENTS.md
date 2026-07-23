@@ -71,15 +71,31 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Commit and Merge
 
-After completing each feature or coherent unit of work, create a small commit on the development branch.
+After completing each feature or coherent unit of work, create a small Conventional Commit on the development branch. Use only a short description during development:
+
+```text
+<type>[optional scope]: <short-description>
+```
 
 Only when the user explicitly asks to merge:
 
 1. Commit any remaining uncommitted changes as a final small commit.
-2. Review every development-branch commit message and summarize all of them into the squash commit message.
+2. Review every development-branch commit message and summarize all of them into the squash commit message described below.
 3. Read and follow the [merge-worktree skill](.agents/skills/merge-worktree/SKILL.md). Run its script with the current worktree as the execution directory and provide the squash commit message and optional test command.
 
 Do not merge automatically when development is complete.
+
+### Squash Commit Message
+
+The squash commit message must use Conventional Commits and include a feature list covering every meaningful development-branch commit. Do not use only a generic one-line message.
+
+```text
+<type>[optional scope]: <description>
+
+- <feature 1>
+- <feature 2>
+- <feature 3>
+```
 
 # Addressing Convention
 

@@ -7,21 +7,9 @@ description: Commit staged changes directly on local main, or rebase a completed
 
 Merge completed worktree changes into local `main` as one Conventional Commit. Do not access remote refs.
 
-## Squash Commit Message
-
-The squash commit message must use Conventional Commits and list every meaningful change. Do not use only a generic one-line message.
-
-```text
-<type>[optional scope]: <description>
-
-- <change 1>
-- <change 2>
-- <change 3>
-```
-
 ## Workflow
 
-1. Compose the complete commit message and select an optional test command.
+1. Compose the squash commit message according to `AGENTS.md` and select an optional test command.
 2. Use the current worktree as the execution directory:
    - On `main`, stage exactly the changes to commit. Leave no unstaged or untracked files.
    - On a development branch, commit every change and leave the worktree clean.
