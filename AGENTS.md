@@ -69,9 +69,17 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
    ```
 3. Keep all development commits on the development branch. Do not push it unless explicitly requested.
 
-## Complete and Merge
+## Commit and Merge
 
-After development is complete, read and follow the [merge-worktree skill](.agents/skills/merge-worktree/SKILL.md). Run its script with the current worktree as the execution directory and provide the commit message and optional test command.
+After completing each feature or coherent unit of work, create a small commit on the development branch.
+
+Only when the user explicitly asks to merge:
+
+1. Commit any remaining uncommitted changes as a final small commit.
+2. Review every development-branch commit message and summarize all of them into the squash commit message.
+3. Read and follow the [merge-worktree skill](.agents/skills/merge-worktree/SKILL.md). Run its script with the current worktree as the execution directory and provide the squash commit message and optional test command.
+
+Do not merge automatically when development is complete.
 
 # Addressing Convention
 
