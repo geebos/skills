@@ -12,7 +12,7 @@ description: 以严格的追加-only 方式评审技术文档：固定一名 Rev
 | 允许 | 禁止 |
 |------|------|
 | 解析文档、分支预检、复制评审模板骨架 | 自己扫描问题、写 Answer、写 Review、改技术文档结论 |
-| **启动恰好一个** `technical_doc_review_coordinator` 子 agent | 自己串行调度 `technical_doc_reviewer` / `technical_doc_answerer` |
+| **启动恰好一个** `technical_doc_review_coordinator` 子 agent | 自己调度 worker；启动多个 coordinator；并行开多个 reviewer/answerer |
 | 等待协调者返回最终 branch / commit 并转述 | 自己跑 `validate_review.py`、自己 `git commit` 轮次 |
 | 用户明确要求合并时再合并 | 以「协调者不可用」为由在本会话代行调度（除非启动协调者**已失败**且用户同意你代行） |
 
