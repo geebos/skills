@@ -14,8 +14,12 @@ from pathlib import Path
 ROUND_HEADING = re.compile(r"^## Review Round (\d+)\s*$", re.MULTILINE)
 NEW_ISSUE = re.compile(r"^#### (R\d{3,})：[^\n]+$", re.MULTILINE)
 STATUS_EVENT = re.compile(r"^- (R\d{3,})：([^\n]+)$", re.MULTILINE)
-ANSWER_EVENT = re.compile(r"^#### (R\d{3,}) / Answer / Round \d+\s*$", re.MULTILINE)
-REVIEW_EVENT = re.compile(r"^#### (R\d{3,}) / Review / Round \d+\s*$", re.MULTILINE)
+ANSWER_EVENT = re.compile(
+    r"^#{4,5} (R\d{3,}) / Answer / Round \d+\s*$", re.MULTILINE
+)
+REVIEW_EVENT = re.compile(
+    r"^#{4,5} (R\d{3,}) / Review / Round \d+\s*$", re.MULTILINE
+)
 PLACEHOLDER = re.compile(r"<(?:document-name|full-hash|YYYY-MM-DD|count|hash)")
 FUZZY_TERMS = (
     "可以",
@@ -35,8 +39,6 @@ REQUIRED_ROUND_SECTIONS = (
     "本轮新增问题",
     "本轮确定的技术结论",
     "历史问题状态变更",
-    "Answer 处理记录",
-    "Review 复核结论",
     "本轮未关闭问题",
 )
 COMPLETION_COUNT = re.compile(
