@@ -6,8 +6,8 @@
 * Review 文档：`review-<document-name>.md`
 * Review 分支：`review/<document-name>`
 * 基准分支：`main`
-* Review Agent：`technical_doc_reviewer`
-* Answer Agent：`technical_doc_answerer`
+* Review Agent：`technical-doc-reviewer`
+* Answer Agent：`technical-doc-answerer`
 
 ## Round 1
 

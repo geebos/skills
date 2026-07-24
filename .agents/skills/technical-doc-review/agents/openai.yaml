@@ -1,4 +1,4 @@
 interface:
   display_name: "技术文档评审"
   short_description: "预检后启动协调者子 agent，勿在本会话自调度"
-  default_prompt: "使用 $technical-doc-review：完成分支预检后启动 technical_doc_review_coordinator，由协调者调度至完成；本会话不要自己跑评审循环。"
+  default_prompt: "使用 $technical-doc-review：完成分支预检后启动 technical-doc-review-coordinator，由协调者调度至完成；本会话不要自己跑评审循环。"

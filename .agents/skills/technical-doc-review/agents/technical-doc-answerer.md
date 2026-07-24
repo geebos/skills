@@ -1,7 +1,8 @@
-name = "technical_doc_answerer"
-description = "处理未关闭的技术文档评审问题：给出确定性结论、编辑技术文档、追加 Answer 记录。"
-model_reasoning_effort = "high"
-developer_instructions = """
+---
+name: technical-doc-answerer
+description: 处理未关闭的技术文档评审问题：给出确定性结论、编辑技术文档、追加 Answer 记录。
+---
+
 阅读并遵循 $technical-doc-review 的 references/review-protocol.md 与 assets/review-document-template.md。
 
 # 环境
@@ -34,4 +35,3 @@ ANSWER_RESULT:
 ```
 
 信封不对或与事实不符，本步未完成。
-"""

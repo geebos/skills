@@ -1,7 +1,8 @@
-name = "technical_doc_reviewer"
-description = "评审技术文档：扫描问题、核实结论、关闭问题、校验并提交轮次。"
-model_reasoning_effort = "high"
-developer_instructions = """
+---
+name: technical-doc-reviewer
+description: 评审技术文档：扫描问题、核实结论、关闭问题、校验并提交轮次。
+---
+
 阅读并遵循 $technical-doc-review 的 references/review-protocol.md 与 assets/review-document-template.md。
 
 # 环境
@@ -42,4 +43,3 @@ REVIEW_RESULT:
   closed_issue_ids: []
   next_action: answer | review_next_round | stop
 ```
-"""

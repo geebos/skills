@@ -12,19 +12,21 @@ description: 以严格的追加-only 方式评审技术文档：固定一名 Rev
 | 允许 | 禁止 |
 |------|------|
 | 解析文档、分支预检、复制评审模板骨架 | 自己扫描问题、写 Answer、写 Review、改技术文档结论 |
-| **启动恰好一个** `technical_doc_review_coordinator` 子 agent | 自己调度 worker；启动多个 coordinator；并行开多个 reviewer/answerer |
+| **启动恰好一个** `technical-doc-review-coordinator` 子 agent | 自己调度 worker；启动多个 coordinator；并行开多个 reviewer/answerer |
 | **阻塞等待**协调者跑完全流程后返回最终 branch / commit 并转述 | 自己跑 `validate_review.py`、自己 `git commit` 轮次 |
-| 用户明确要求合并时再合并 | 协调者仍在跑或仅中间态时「代行 verify/scan」；仅当协调者**进程启动失败或已确认死亡**且用户同意才可按 coordinator.toml 代行 |
+| 用户明确要求合并时再合并 | 协调者仍在跑或仅中间态时「代行 verify/scan」；仅当协调者**进程启动失败或已确认死亡**且用户同意才可按 coordinator.md 代行 |
 
 状态机、恢复、worker 提示写法**只**在协调者 agent 文件里。不要把那些步骤抄进本会话自己执行。
 
 协调者若中途回复「等待 reviewer / 是否代行 verify」而**没有** `phase: complete` 或终端失败快照：视为协调者未遵守阻塞规则——**resume 同一协调者线程**，令其从快照继续（通常是 verify），不要立刻在本会话代行。
 
-Agent 定义：
+Agent 定义（Markdown，Claude Code 格式）：
 
-- [agents/technical-doc-review-coordinator.toml](agents/technical-doc-review-coordinator.toml) ← 唯一调度入口
-- [agents/technical-doc-reviewer.toml](agents/technical-doc-reviewer.toml)
-- [agents/technical-doc-answerer.toml](agents/technical-doc-answerer.toml)
+- [agents/technical-doc-review-coordinator.md](agents/technical-doc-review-coordinator.md) ← 唯一调度入口
+- [agents/technical-doc-reviewer.md](agents/technical-doc-reviewer.md)
+- [agents/technical-doc-answerer.md](agents/technical-doc-answerer.md)
+
+安装到本机 Claude agents：在仓库根执行 `make sync-agents`（复制到 `~/.claude/agents/`）。
 
 模板（仅预检时复制骨架用）：[assets/review-document-template.md](assets/review-document-template.md)
 
@@ -56,7 +58,7 @@ Agent 定义：
 
 ### 4. 交接给协调者（必须）
 
-立即启动 **一个** 子 agent，类型/名称：`technical_doc_review_coordinator`（按其 [toml](agents/technical-doc-review-coordinator.toml) 加载指令）。
+立即启动 **一个** 子 agent，类型/名称：`technical-doc-review-coordinator`（按其 [md](agents/technical-doc-review-coordinator.md) 加载指令；需已 `make sync-agents` 或运行时能解析该 agent）。
 
 首条消息**只**给事实，例如：
 
@@ -75,7 +77,7 @@ merge_authorized: false
 2. **等待**该子 agent 跑完并返回最终 `branch` + `head_commit`（或失败原因）。
 3. 把结果报告给用户。
 
-不要在本会话再 spawn reviewer/answerer，除非协调者进程**启动失败**（agent 类型不存在/无法创建）。仅在那时：告知用户，并询问是否由你按 coordinator.toml **全文**代行调度；未经同意不得代行。
+不要在本会话再 spawn reviewer/answerer，除非协调者进程**启动失败**（agent 类型不存在/无法创建）。仅在那时：告知用户，并询问是否由你按 coordinator.md **全文**代行调度；未经同意不得代行。
 
 ### 5. 合并
 

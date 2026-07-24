@@ -107,10 +107,10 @@ def validate(document: Path, review: Path, mode: str) -> tuple[list[str], list[s
     if not re.search(r"^## 基本信息\s*$", review_text, re.MULTILINE):
         errors.append("缺少「## 基本信息」章节")
     else:
-        if "technical_doc_reviewer" not in review_text.split("## Round", 1)[0]:
-            errors.append("基本信息必须标识 technical_doc_reviewer")
-        if "technical_doc_answerer" not in review_text.split("## Round", 1)[0]:
-            errors.append("基本信息必须标识 technical_doc_answerer")
+        if "technical-doc-reviewer" not in review_text.split("## Round", 1)[0]:
+            errors.append("基本信息必须标识 technical-doc-reviewer")
+        if "technical-doc-answerer" not in review_text.split("## Round", 1)[0]:
+            errors.append("基本信息必须标识 technical-doc-answerer")
 
     blocks = round_blocks(review_text)
     numbers = [number for number, _ in blocks]
