@@ -13,10 +13,12 @@ description: 以严格的追加-only 方式评审技术文档：固定一名 Rev
 |------|------|
 | 解析文档、分支预检、复制评审模板骨架 | 自己扫描问题、写 Answer、写 Review、改技术文档结论 |
 | **启动恰好一个** `technical_doc_review_coordinator` 子 agent | 自己调度 worker；启动多个 coordinator；并行开多个 reviewer/answerer |
-| 等待协调者返回最终 branch / commit 并转述 | 自己跑 `validate_review.py`、自己 `git commit` 轮次 |
-| 用户明确要求合并时再合并 | 以「协调者不可用」为由在本会话代行调度（除非启动协调者**已失败**且用户同意你代行） |
+| **阻塞等待**协调者跑完全流程后返回最终 branch / commit 并转述 | 自己跑 `validate_review.py`、自己 `git commit` 轮次 |
+| 用户明确要求合并时再合并 | 协调者仍在跑或仅中间态时「代行 verify/scan」；仅当协调者**进程启动失败或已确认死亡**且用户同意才可按 coordinator.toml 代行 |
 
 状态机、恢复、worker 提示写法**只**在协调者 agent 文件里。不要把那些步骤抄进本会话自己执行。
+
+协调者若中途回复「等待 reviewer / 是否代行 verify」而**没有** `phase: complete` 或终端失败快照：视为协调者未遵守阻塞规则——**resume 同一协调者线程**，令其从快照继续（通常是 verify），不要立刻在本会话代行。
 
 Agent 定义：
 
