@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "site": "linuxdo",
+  "dateYmd": "20260726",
+  "generatedAt": "2026-07-26T10:00:00Z",
+  "globalNotes": [],
+  "risks": [],
+  "items": [
+    {
+      "id": "linuxdo-2633331",
+      "sourceId": "2633331",
+      "source": "linuxdo",
+      "title": "示例：开源工具更新",
+      "blurb": "小幅迭代，适合已有用户跟进。",
+      "direction": "dev",
+      "directionName": "开发与自建",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://linux.do/t/topic/2633331"
+        }
+      ],
+      "coverage": {
+        "declaredPosts": 3,
+        "scrapedPosts": 3,
+        "status": "complete",
+        "note": ""
+      },
+      "analysis": [
+        "仓库发布 **v0.x**，安装步骤简化；版本号与步骤来自帖子正文，尚未独立复现。"
+      ],
+      "facts": [
+        "帖子列出 v0.x 更新说明。"
+      ],
+      "opinions": [],
+      "validity": "中可信 · 开源发布帖，未独立复现",
+      "conclusion": "已有用户可按 changelog 评估升级。",
+      "tags": [
+        "开源"
+      ],
+      "siteMeta": {
+        "section": "develop",
+        "depth": 1
+      }
+    }
+  ]
+}

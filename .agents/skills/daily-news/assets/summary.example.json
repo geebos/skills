@@ -1,0 +1,171 @@
+{
+  "date": "2026-07-23",
+  "dateYmd": "20260723",
+  "generatedAt": "2026-07-23T12:00:00Z",
+  "sourceNote": "示例数据：校验「内容详细总结」主文渲染。",
+  "directionCards": [
+    {
+      "id": "llm",
+      "name": "AI / LLM 工具与应用",
+      "summary": "官方产品迭代为主线。",
+      "events": [
+        {
+          "text": "型号 X 官方上线（示例）",
+          "itemId": "linuxdo-0"
+        }
+      ]
+    },
+    {
+      "id": "dev",
+      "name": "开发与自建",
+      "summary": "本日示例一条。",
+      "events": [
+        {
+          "text": "开源小工具更新（示例）",
+          "itemId": "v2ex-1"
+        }
+      ]
+    },
+    {
+      "id": "finance",
+      "name": "投资 / 加密 / 财经",
+      "summary": "本日示例一条（集思录）。",
+      "events": [
+        {
+          "text": "转债条款博弈讨论（示例）",
+          "itemId": "jisilu-0"
+        }
+      ]
+    },
+    {
+      "id": "bond-play",
+      "name": "配债实战",
+      "summary": "当日动态生成的自由分类示例（非固定四方向）。",
+      "events": [
+        {
+          "text": "某转债一手党配债测算（示例）",
+          "itemId": "jisilu-1"
+        }
+      ]
+    }
+  ],
+  "globalNotes": [
+    "冒烟数据，勿当日报。"
+  ],
+  "items": [
+    {
+      "id": "linuxdo-0",
+      "title": "示例：某模型发布",
+      "blurb": "官方上线型号 X。",
+      "source": "linuxdo",
+      "direction": "llm",
+      "directionName": "AI / LLM 工具与应用",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://linux.do/t/topic/0"
+        }
+      ],
+      "coverage": "posts=1，cooked 1 · complete",
+      "analysis": [
+        "官方上线型号 **X**，详见 [主帖](https://linux.do/t/topic/0)。",
+        "价目示例：\n\n| 项 | 值 |\n| --- | --- |\n| 输入 | $1.5 / M |\n| 输出 | $7.5 / M |"
+      ],
+      "facts": [
+        "官方公告称型号 X 上线。"
+      ],
+      "opinions": [
+        "评论区认为定价偏高。"
+      ],
+      "validity": "高可信 · 官方源（示例）",
+      "conclusion": "事件属实（示例）。",
+      "tags": [
+        "产品",
+        "示例"
+      ]
+    },
+    {
+      "id": "v2ex-1",
+      "title": "示例：开源工具更新",
+      "blurb": "小幅迭代。",
+      "source": "v2ex",
+      "direction": "dev",
+      "directionName": "开发与自建",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://www.v2ex.com/t/1"
+        }
+      ],
+      "coverage": "posts=3，cooked 3 · complete",
+      "analysis": "单段 string 也可以：仓库发了 v0.x，安装步骤简化，适合已有用户跟进，非紧急。",
+      "facts": [
+        "v0.x 更新说明（示例）。"
+      ],
+      "opinions": [],
+      "validity": "中可信（示例）",
+      "conclusion": "跟 changelog 即可。",
+      "tags": [
+        "开源"
+      ]
+    },
+    {
+      "id": "jisilu-0",
+      "title": "示例：转债条款博弈",
+      "blurb": "某转债下修预期讨论。",
+      "source": "jisilu",
+      "direction": "finance",
+      "directionName": "投资 / 加密 / 财经",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://www.jisilu.cn/question/0"
+        }
+      ],
+      "coverage": "posts=49，cooked9/49 · capped",
+      "analysis": "楼主统计该转债剩余规模与回售条款，认为下修概率较高；评论区对正股走势分歧明显。详见 [主帖](https://www.jisilu.cn/question/0)。",
+      "facts": [
+        "剩余规模 3.x 亿（示例）。"
+      ],
+      "opinions": [
+        "多数回复倾向博弈下修。"
+      ],
+      "validity": "中可信 · 数据需以公告核验（示例）",
+      "conclusion": "事件属实，不构成投资建议（示例）。",
+      "tags": [
+        "可转债",
+        "示例"
+      ]
+    },
+    {
+      "id": "jisilu-1",
+      "title": "示例：配债一手党测算",
+      "blurb": "自由分类条目示例。",
+      "source": "jisilu",
+      "direction": "bond-play",
+      "directionName": "配债实战",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://www.jisilu.cn/question/1"
+        }
+      ],
+      "coverage": "posts=7，cooked 7/7 · complete",
+      "analysis": "演示自由分类：`direction` 用非标准 id `bond-play`，渲染器按出现顺序配色，无需预定义。",
+      "facts": [
+        "200 股配 5 张测算（示例）。"
+      ],
+      "opinions": [],
+      "validity": "中 · 个人测算（示例）",
+      "conclusion": "不构成投资建议（示例）。",
+      "tags": [
+        "配债",
+        "示例"
+      ]
+    }
+  ],
+  "crossLinks": [],
+  "risks": [
+    "冒烟数据。"
+  ]
+}
