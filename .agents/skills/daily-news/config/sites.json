@@ -1,0 +1,31 @@
+{
+  "sites": [
+    {
+      "id": "linuxdo",
+      "name": "linux.do",
+      "label": "linux.do",
+      "enabled": true,
+      "adapter": "scripts/sites/linuxdo.mjs",
+      "badgeColor": "#f0a04b",
+      "requiresDisclaimer": false
+    },
+    {
+      "id": "v2ex",
+      "name": "V2EX",
+      "label": "V2EX",
+      "enabled": true,
+      "adapter": "scripts/sites/v2ex.mjs",
+      "badgeColor": "#6ea8fe",
+      "requiresDisclaimer": false
+    },
+    {
+      "id": "jisilu",
+      "name": "集思录",
+      "label": "集思录",
+      "enabled": true,
+      "adapter": "scripts/sites/jisilu.mjs",
+      "badgeColor": "#7ddf9a",
+      "requiresDisclaimer": true
+    }
+  ]
+}
