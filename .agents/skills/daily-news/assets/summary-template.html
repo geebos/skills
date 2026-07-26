@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>三站每日调研 · {{DATE}}</title>
+  <title>{{SITE_LIST}} 每日调研 · {{DATE}}</title>
   <style>
     :root {
       --bg: #0f1419;
@@ -296,22 +296,12 @@
       padding: 0.1rem 0.45rem;
       flex-shrink: 0;
     }
-    .rec-source-linuxdo {
-      background: #1a3a5c;
-      color: #7db8e8;
-    }
-    .rec-source-v2ex {
-      background: #3a3520;
-      color: #e8c86d;
-    }
-    .rec-source-jisilu {
-      background: #1e3a2a;
-      color: #7dd8a0;
+    .rec-source {
+      background: #2a2a2a;
+      color: #c8c8c8;
     }
     @media (prefers-color-scheme: light) {
-      .rec-source-linuxdo { background: #dbeafe; color: #1e5a9e; }
-      .rec-source-v2ex { background: #fef3c7; color: #92600a; }
-      .rec-source-jisilu { background: #dcfce7; color: #166534; }
+      .rec-source { background: #e8e8e8; color: #444; }
     }
     .rec-blurb {
       margin: 0.3rem 0 0;
@@ -531,11 +521,12 @@
     }
     a.back-top:hover { color: var(--accent); }
   </style>
+  {{SITE_STYLES}}
 </head>
 <body>
   <div class="wrap">
     <header class="hero" id="top">
-      <h1>linux.do + V2EX 每日调研 · {{DATE}}</h1>
+      <h1>{{SITE_LIST}} 每日调研 · {{DATE}}</h1>
       <div class="meta">
         <span>目录日 <strong>{{DATE_YMD}}</strong></span>
         <span>推荐 <strong>{{ITEM_COUNT}}</strong> 条</span>
@@ -583,7 +574,7 @@
     </section>
 
     <footer class="page-foot">
-      monkfish · linuxdo + v2ex daily research · 模板驱动渲染
+      monkfish · {{SITE_LIST}} daily research · 模板驱动渲染
     </footer>
   </div>
 </body>

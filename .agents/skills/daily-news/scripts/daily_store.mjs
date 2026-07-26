@@ -111,6 +111,12 @@ function itemsFromList(list, adapter) {
   return items;
 }
 
+function coverageText(coverage) {
+  const declared = coverage.declared_posts == null ? "?" : coverage.declared_posts;
+  const note = coverage.note?.trim() ? ` · ${coverage.note.trim()}` : "";
+  return `posts=${declared}，scraped ${coverage.cooked_scraped ?? 0}/${declared} · ${coverage.status}${note}`;
+}
+
 async function buildSummary(db, runId) {
   const run = store.getRun(db, runId);
   const items = store.listReportItems(db, runId);
@@ -120,7 +126,21 @@ async function buildSummary(db, runId) {
 
   const cards = new Map();
   const summaryItems = items.map((item) => {
-    const site = registry.get(item.siteId);
+    const site = registry.require(item.siteId);
+    const url = item.url || site.topicUrl(item.sourceId);
+    if (!site.validateArticleUrl(url, item.sourceId)) {
+      throw new Error(
+        `${item.siteId}-${item.sourceId}: link ${url} does not belong to ${item.siteId}`,
+      );
+    }
+    if (
+      site.requiredConclusionText &&
+      !item.conclusion.includes(site.requiredConclusionText)
+    ) {
+      throw new Error(
+        `${item.siteId}-${item.sourceId}: conclusion must include ${site.requiredConclusionText}`,
+      );
+    }
     if (!cards.has(item.direction)) {
       cards.set(item.direction, {
         id: item.direction,
@@ -141,8 +161,9 @@ async function buildSummary(db, runId) {
       blurb: item.blurb,
       direction: item.direction,
       directionName: item.directionName,
-      links: [{ label: "主帖", url: item.url || site?.topicUrl(item.sourceId) || "" }],
-      coverage: item.coverage,
+      links: [{ label: "主帖", url }],
+      coverage: coverageText(item.coverage),
+      coverageData: item.coverage,
       analysis: item.analysis,
       validity: item.validity,
       conclusion: item.conclusion,
@@ -158,8 +179,8 @@ async function buildSummary(db, runId) {
     generatedAt: new Date().toISOString(),
     sites: usedSites.map((id) => ({
       id,
-      label: registry.get(id)?.label ?? id,
-      badgeColor: registry.get(id)?.badgeColor ?? null,
+      label: registry.require(id).label,
+      badge: registry.require(id).badge,
     })),
     sourceNote: `由 ${usedSites.map((id) => registry.get(id)?.label ?? id).join("、")} ${usedSites.length} 个站点合并生成。`,
     directionCards: [...cards.values()].map((card) => ({

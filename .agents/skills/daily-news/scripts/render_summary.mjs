@@ -381,14 +381,40 @@ function globalNotesHtml(notes) {
 </div>`;
 }
 
-const SOURCE_LABELS = { linuxdo: "linux.do", v2ex: "V2EX", jisilu: "集思录" };
-
-function sourceBadge(source) {
-  if (!source || !SOURCE_LABELS[source]) return "";
-  return `<span class="rec-source rec-source-${esc(source)}">${SOURCE_LABELS[source]}</span>`;
+/** Site labels/colors come from summary.sites, which the store fills from the registry. */
+function sourceLabels(data) {
+  const map = new Map();
+  for (const site of data.sites || []) map.set(site.id, site);
+  return map;
 }
 
-function recListHtml(items) {
+function sourceBadge(sites, source) {
+  const site = sites.get(source);
+  if (!site) return "";
+  return `<span class="rec-source" data-source="${esc(source)}">${esc(site.label)}</span>`;
+}
+
+/** Emit per-site badge colors so the template carries no hardcoded site list. */
+function siteStyles(data) {
+  const rules = [];
+  const light = [];
+  for (const site of data.sites || []) {
+    if (!site.badge) continue;
+    const sel = `.rec-source[data-source="${site.id}"]`;
+    if (site.badge.dark) {
+      rules.push(`${sel} { background: ${site.badge.dark.bg}; color: ${site.badge.dark.fg}; }`);
+    }
+    if (site.badge.light) {
+      light.push(`  ${sel} { background: ${site.badge.light.bg}; color: ${site.badge.light.fg}; }`);
+    }
+  }
+  if (light.length) {
+    rules.push(`@media (prefers-color-scheme: light) {\n${light.join("\n")}\n}`);
+  }
+  return rules.length ? `<style>\n${rules.join("\n")}\n</style>` : "";
+}
+
+function recListHtml(items, sites) {
   if (!items.length) {
     return '<p class="muted">本日无推荐条目。</p>';
   }
@@ -401,7 +427,7 @@ function recListHtml(items) {
       const idBadge = it.id
         ? `<span class="rec-id">${esc(it.id)}</span>`
         : "";
-      const src = sourceBadge(it.source);
+      const src = sourceBadge(sites, it.source);
       const blurb = it.blurb
         ? `<p class="rec-blurb">${esc(it.blurb)}</p>`
         : it.conclusion
@@ -450,11 +476,9 @@ function analysisHtml(item) {
   return parts.map((p) => richMdHtml(p) || `<p>${inlineMd(esc(p))}</p>`).join("\n");
 }
 
-function detailHtml(item, rank) {
+function detailHtml(item, rank, sites) {
   const id = item.id || String(rank);
-  const srcLabel = item.source && SOURCE_LABELS[item.source]
-    ? `${SOURCE_LABELS[item.source]} · `
-    : "";
+  const srcLabel = sites.has(item.source) ? `${sites.get(item.source).label} · ` : "";
   const dirLine = item.directionName
     ? `<p class="detail-meta">${esc(srcLabel + item.directionName)}${item.id ? ` · ${esc(item.id)}` : ""}</p>`
     : item.id || srcLabel
@@ -510,7 +534,8 @@ function detailHtml(item, rank) {
 function render(data, template) {
   const items = normalizeItems(data);
   const cards = normalizeCards(data, items);
-  const details = items.map((it, i) => detailHtml(it, i + 1)).join("\n");
+  const sites = sourceLabels(data);
+  const details = items.map((it, i) => detailHtml(it, i + 1, sites)).join("\n");
 
   const globalNotes =
     data.globalNotes ||
@@ -521,9 +546,13 @@ function render(data, template) {
     "{{DATE_YMD}}": esc(data.dateYmd || ""),
     "{{GENERATED_AT}}": esc(data.generatedAt || ""),
     "{{SOURCE_NOTE}}": esc(data.sourceNote || ""),
+    "{{SITE_LIST}}": esc(
+      (data.sites || []).map((site) => site.label).join(" + ") || "多站",
+    ),
+    "{{SITE_STYLES}}": siteStyles(data),
     "{{DIR_CARDS}}": dirCardsHtml(cards),
     "{{GLOBAL_NOTES}}": globalNotesHtml(globalNotes),
-    "{{REC_LIST}}": recListHtml(items),
+    "{{REC_LIST}}": recListHtml(items, sites),
     "{{DETAILS}}": details || '<p class="muted">本日无详析条目。</p>',
     "{{CROSS_LINKS}}": listHtml(data.crossLinks, "（无）"),
     "{{RISKS}}": listHtml(data.risks, "（无额外风险项）"),
