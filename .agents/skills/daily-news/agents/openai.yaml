@@ -1,0 +1,4 @@
+interface:
+  display_name: "每日调研"
+  short_description: "按列表识别 / 文章识别 / 深度解读三阶段串行编排"
+  default_prompt: "使用 $daily-news：初始化 run 后依次派发列表识别、文章识别、深度解读三个阶段 agent，每次派发后阻塞等待结果信封；本会话不要自己选帖或抓取。"
