@@ -3,7 +3,7 @@
 SKILLS_NPM_CACHE ?= $(if $(TMPDIR),$(TMPDIR),/tmp/)skills-npm-cache
 SYNC_HOME ?= $(HOME)
 CLAUDE_AGENTS_DIR ?= $(SYNC_HOME)/.claude/agents
-AGENT_SOURCE_DIR := .agents/skills/technical-doc-review/agents
+AGENT_FILES := $(wildcard .agents/skills/*/agents/*.md)
 
 # Usage:
 #   make add vercel-labs/agent-skills
@@ -33,17 +33,16 @@ sync:
 	ln -sfn ../.agents/AGENTS.md "$(SYNC_HOME)/.pi/AGENTS.md"
 	npm_config_cache="$(SKILLS_NPM_CACHE)" npx --yes skills update --global --yes
 
-# Copy technical-doc-review agent markdown definitions into ~/.claude/agents
+# Copy every skill's agent markdown definitions into ~/.claude/agents
 sync-agents:
 	@mkdir -p "$(CLAUDE_AGENTS_DIR)"
-	@for f in technical-doc-review-coordinator.md technical-doc-reviewer.md technical-doc-answerer.md; do \
-		src="$(AGENT_SOURCE_DIR)/$$f"; \
-		if [ ! -f "$$src" ]; then \
-			echo "missing agent file: $$src" >&2; \
-			exit 1; \
-		fi; \
-		cp "$$src" "$(CLAUDE_AGENTS_DIR)/$$f"; \
-		echo "copied $$f -> $(CLAUDE_AGENTS_DIR)/$$f"; \
+	@if [ -z "$(AGENT_FILES)" ]; then \
+		echo "no agent definitions found under .agents/skills/*/agents/" >&2; \
+		exit 1; \
+	fi
+	@for src in $(AGENT_FILES); do \
+		cp "$$src" "$(CLAUDE_AGENTS_DIR)/$$(basename $$src)"; \
+		echo "copied $$src -> $(CLAUDE_AGENTS_DIR)/$$(basename $$src)"; \
 	done
 	@# Drop legacy Codex toml copies if present
 	@rm -f \
