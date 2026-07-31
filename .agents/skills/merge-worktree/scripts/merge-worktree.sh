@@ -237,10 +237,17 @@ fi
 
 git -C "$main_worktree" branch -d "$temp_branch"
 
+if [ "$mode" = "main-worktree" ]; then
+  git switch --detach
+fi
+
+git -C "$dev_worktree" branch -D "$dev_branch"
+
 echo "MODE=$mode"
 echo "MAIN_WORKTREE=$main_worktree"
 echo "MAIN_REF=refs/heads/main"
 echo "DEV_WORKTREE=$dev_worktree"
 echo "DEV_BRANCH=$dev_branch"
+echo "DEV_BRANCH_DELETED=$dev_branch"
 echo "TEMP_BRANCH=$temp_branch"
 echo "COMMIT=$commit_sha"
