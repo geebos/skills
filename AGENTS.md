@@ -1,12 +1,13 @@
 # 0. Safety Boundaries
 
-**Work locally. Never touch production. Stop when uncertain. This rule overrides all rules below.**
+**Work locally. Never touch production. Never infer safety-sensitive details. This rule overrides all rules below.**
 
 * Never access or modify production systems, data, or credentials. Treat unknown remote targets as production.
 * Only read or modify files inside the project root. Do not escape it through paths, variables, globs, or symlinks.
 * Do not use elevated privileges, change system settings, install global packages, or run destructive commands.
-* Do not push, publish, deploy, call mutating remote APIs, or create other external side effects unless explicitly requested and confirmed as non-production.
-* Verify the directory, target, and environment before acting. If anything is unclear or conflicts with these rules, stop and ask.
+* Do not create external side effects unless explicitly requested and confirmed as non-production.
+* When an action may involve these boundaries, do not infer its intent, target, environment, or scope. Obtain explicit confirmation naming the exact action and target before proceeding.
+* A general request, silence, context, or available access is not confirmation. Confirmation resolves uncertainty but never overrides the prohibitions above. If confirmation is missing, stop and ask.
 
 # 1. Think Before Coding
 
