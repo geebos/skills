@@ -15,7 +15,7 @@ Merge completed worktree changes into local `main` as one Conventional Commit. D
    - On a development branch, commit every change and leave the worktree clean.
 3. Run the script:
    ```bash
-   bash .agents/skills/merge-worktree/scripts/merge-worktree.sh \
+   bash ./scripts/merge-worktree.sh \
      --message "<conventional-commit-message>" \
      --test-command "<test-command>"
    ```
@@ -31,5 +31,5 @@ On `main`, the script commits staged changes directly. On a development branch, 
 After changing this Skill, run:
 
 ```bash
-bash .agents/skills/merge-worktree/tests/test-merge-worktree.sh
+bash ./tests/test-merge-worktree.sh
 ```

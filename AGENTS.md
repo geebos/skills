@@ -1,3 +1,13 @@
+# 0. Safety Boundaries
+
+**Work locally. Never touch production. Stop when uncertain. This rule overrides all rules below.**
+
+* Never access or modify production systems, data, or credentials. Treat unknown remote targets as production.
+* Only read or modify files inside the project root. Do not escape it through paths, variables, globs, or symlinks.
+* Do not use elevated privileges, change system settings, install global packages, or run destructive commands.
+* Do not push, publish, deploy, call mutating remote APIs, or create other external side effects unless explicitly requested and confirmed as non-production.
+* Verify the directory, target, and environment before acting. If anything is unclear or conflicts with these rules, stop and ask.
+
 # 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
@@ -81,7 +91,7 @@ Only when the user explicitly asks to merge:
 
 1. Commit any remaining uncommitted changes as a final small commit.
 2. Review every development-branch commit message and summarize all of them into the squash commit message described below.
-3. Read and follow the [merge-worktree skill](.agents/skills/merge-worktree/SKILL.md). Run its script with the current worktree as the execution directory and provide the squash commit message and optional test command.
+3. Read and follow the `merge-worktree` skill. Run its script with the current worktree as the execution directory and provide the squash commit message and optional test command.
 
 Do not merge automatically when development is complete.
 
