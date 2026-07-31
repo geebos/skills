@@ -7,15 +7,23 @@ description: Commit staged changes directly on local main, or serialize, rebase,
 
 Merge completed worktree changes into local `main` as one Conventional Commit. Do not access remote refs.
 
+## Bundled scripts
+
+This Skill includes the following script:
+
+`scripts/merge-worktree.sh`
+
+The path is relative to this Skill's root directory, meaning the directory that contains this `SKILL.md`. To locate the script, first resolve the directory containing this file, then append `scripts/merge-worktree.sh`; do not resolve it relative to the repository worktree.
+
 ## Workflow
 
 1. Compose the squash commit message according to `AGENTS.md` and select an optional test command.
 2. Use the current worktree as the execution directory:
    - On `main`, stage exactly the changes to commit. Leave no unstaged or untracked files.
    - On a development branch, commit every change and leave the worktree clean.
-3. Run the script:
+3. From the current worktree, run the script at the path resolved from this Skill's root directory:
    ```bash
-   bash ./scripts/merge-worktree.sh \
+   bash "<skill-root>/scripts/merge-worktree.sh" \
      --message "<conventional-commit-message>" \
      --test-command "<test-command>"
    ```
@@ -31,5 +39,5 @@ On `main`, the script commits staged changes directly. On a development branch, 
 After changing this Skill, run:
 
 ```bash
-bash ./tests/test-merge-worktree.sh
+bash "<skill-root>/tests/test-merge-worktree.sh"
 ```
