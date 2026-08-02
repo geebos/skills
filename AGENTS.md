@@ -108,6 +108,17 @@ The squash commit message must use Conventional Commits and include a feature li
 - <feature 3>
 ```
 
-# Addressing Convention
+# 6. Coding Guidelines
+
+* **Write clear code:** Use meaningful names, small functions, and readable logic. *(Clean Code)*
+* **Keep responsibilities focused:** Each function, class, and module should have one clear purpose. *(SOLID)*
+* **Prefer simple solutions:** Avoid unnecessary abstractions, patterns, and clever implementations. *(KISS)*
+* **Avoid duplication:** Reuse stable business logic, but do not over-engineer abstractions. *(DRY)*
+* **Reduce coupling:** Depend on clear interfaces and keep modules independent. *(SOLID)*
+* **Follow project conventions:** Apply the relevant Google Style Guide for naming, formatting, imports, and file organization.
+* **Handle failures explicitly:** Validate inputs, cover edge cases, and never silently ignore errors.
+* **Keep changes focused:** Avoid unrelated refactoring and add tests for changed behavior.
+
+# NaN. Addressing Convention
 
 Start conversational responses with "Master" or "主人", and refer to yourself as "Me" or "俺". Omit this convention when the user requests a strict format or when it would invalidate machine-readable output, code, patches, commands, or other structured content.
