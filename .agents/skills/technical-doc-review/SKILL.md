@@ -1,131 +1,84 @@
 ---
 name: technical-doc-review
-description: Run a strict, append-only technical-document review with one persistent Review Agent and one persistent Answer Agent. Use when reviewing architecture documents, RFCs, ADRs, API specifications, runbooks, deployment designs, or other Markdown technical documents that must converge on unique, explicit, executable, and verifiable decisions with per-round Git commits and a durable review audit trail.
+description: 以严格的追加-only 方式评审技术文档：固定一名 Review Agent 与一名 Answer Agent。适用于架构文档、RFC、ADR、API 规范、runbook、部署设计等 Markdown 技术文档，要求收敛到唯一、明确、可执行、可验证的结论，并按轮次提交 Git 与保留完整评审审计记录。
 ---
 
-# Technical Document Review
+# 技术文档评审
 
-Use two persistent worker agents and a coordinator. Keep the roles separate:
+## 硬规则（先读）
 
-- `technical_doc_reviewer`: inspect the technical document, append review issues, verify actual document changes, close eligible issues, and commit a completed round.
-- `technical_doc_answerer`: answer open issues, edit the technical document, remove conflicts, append answer records, and move issues to `待复核`.
-- `technical_doc_review_coordinator`: route work, preserve context, resume or replace failed workers, and stop when the reviewer reports completion. Never perform reviewer or answerer work.
+读完本 skill 后，**你只做启动器**，不做评审循环。
 
-Read [references/review-protocol.md](references/review-protocol.md) before starting. Copy [assets/review-document-template.md](assets/review-document-template.md) when creating a review document.
+| 允许 | 禁止 |
+|------|------|
+| 解析文档、分支预检、复制评审模板骨架 | 自己扫描问题、写 Answer、写 Review、改技术文档结论 |
+| **启动恰好一个** `technical-doc-review-coordinator` 子 agent | 自己调度 worker；启动多个 coordinator；并行开多个 reviewer/answerer |
+| **阻塞等待**协调者跑完全流程后返回最终 branch / commit 并转述 | 自己跑 `validate_review.py`、自己 `git commit` 轮次 |
+| 用户明确要求合并时再合并 | 协调者仍在跑或仅中间态时「代行 verify/scan」；仅当协调者**进程启动失败或已确认死亡**且用户同意才可按 coordinator.md 代行 |
 
-## Establish scope
+状态机、恢复、worker 提示写法**只**在协调者 agent 文件里。不要把那些步骤抄进本会话自己执行。
 
-1. Resolve exactly one technical document for the review run.
-2. Derive `<document-name>` from its filename without `.md`.
-3. Use `review-<document-name>.md` in the same directory unless the repository specifies another location.
-4. Refuse ambiguous document selection. Do not review multiple documents in one agent pair.
-5. Check repository instructions and Git status. Preserve unrelated user changes.
+协调者若中途回复「等待 reviewer / 是否代行 verify」而**没有** `phase: complete` 或终端失败快照：视为协调者未遵守阻塞规则——**resume 同一协调者线程**，令其从快照继续（通常是 verify），不要立刻在本会话代行。
 
-## Prepare the branch
+Agent 定义（Markdown，Claude Code 格式）：
 
-Have the first reviewer invocation perform the branch preflight:
+- [agents/technical-doc-review-coordinator.md](agents/technical-doc-review-coordinator.md) ← 唯一调度入口
+- [agents/technical-doc-reviewer.md](agents/technical-doc-reviewer.md)
+- [agents/technical-doc-answerer.md](agents/technical-doc-answerer.md)
 
-1. Require a clean worktree.
-2. Switch to `main`.
-3. Pull the latest `main`.
-4. Create and switch to `review/<document-name>`.
-5. Record the starting commit with `git rev-parse HEAD`.
+安装到本机 Claude agents：在仓库根执行 `make sync-agents`（复制到 `~/.claude/agents/`）。
 
-If repository policy requires a different base branch or branch naming rule, follow the repository policy and record the deviation in the review document. Never review directly on `main`.
+模板（仅预检时复制骨架用）：[assets/review-document-template.md](assets/review-document-template.md)
 
-## Run the state machine
+`references/review-protocol.md` 给 **reviewer / answerer** 读，**不要**在本会话按它做评审。
 
-Run agents sequentially because both append to the same review document.
+---
+
+## 启动步骤
+
+### 1. 定范围
+
+1. 解析**恰好一份**技术文档；不明确就停问。
+2. `<document-name>` = 文件名去掉 `.md`。
+3. 评审文档默认：同目录 `review-<document-name>.md`。
+4. 保留无关用户改动。
+
+### 2. 分支预检（仅此由你做）
+
+1. 工作区干净（或仅含已说明的目标文档）。
+2. 切到基线（默认 `main`）并 `git pull`。
+3. `git switch -c review/<document-name>`（续跑则 `git switch` 已有分支）。
+4. `START_COMMIT=$(git rev-parse HEAD)`。
+5. 禁止在基线上直接评审。
+
+### 3. 评审文档骨架
+
+- **不存在**：从模板复制，只填基本信息 + Round 1 的起始/技术文档 Commit（`$START_COMMIT`）。**不要**预填问题、Answer、Review、结论。
+- **已存在**：不覆盖历史；确认已在正确 review 分支。
+
+### 4. 交接给协调者（必须）
+
+立即启动 **一个** 子 agent，类型/名称：`technical-doc-review-coordinator`（按其 [md](agents/technical-doc-review-coordinator.md) 加载指令；需已 `make sync-agents` 或运行时能解析该 agent）。
+
+首条消息**只**给事实，例如：
 
 ```text
-REVIEW_SCAN
-  -> ANSWER
-  -> REVIEW_VERIFY_AND_COMMIT
-  -> REVIEW_SCAN (when any issue remains open or a new issue is found)
-  -> REVIEW_COMPLETE (only when every completion gate passes)
+document: <绝对或仓库相对路径>
+review_document: <路径>
+branch: review/<document-name>
+starting_commit: <START_COMMIT>
+base_branch: main
+merge_authorized: false
 ```
 
-The calling agent starts one `technical_doc_review_coordinator` and gives it the resolved document path plus repository policy. The coordinator owns the remaining dispatch loop. If the custom coordinator is unavailable, the calling agent may perform only the coordinator duties defined here; it still must delegate all review, answer, editing, verification, status, and round-commit work.
+然后：
 
-For Round 1, the coordinator starts one `technical_doc_reviewer`, waits for its branch preflight and scan, and then starts one `technical_doc_answerer`. Reuse those exact worker threads for every later round.
+1. **停止**本会话的评审工作。
+2. **等待**该子 agent 跑完并返回最终 `branch` + `head_commit`（或失败原因）。
+3. 把结果报告给用户。
 
-1. Send the reviewer the document paths, branch, round number, starting commit, and current unresolved issue IDs.
-2. Wait for `REVIEW_RESULT`.
-3. Send the answerer the same context plus the reviewer result.
-4. Wait for `ANSWER_RESULT`.
-5. Send the answer result back to the original reviewer for verification.
-6. Require the reviewer to inspect the actual diff, append verification events, update derived status, run the validator, and create the round commit.
-7. Continue only from the reviewer result after the commit.
+不要在本会话再 spawn reviewer/answerer，除非协调者进程**启动失败**（agent 类型不存在/无法创建）。仅在那时：告知用户，并询问是否由你按 coordinator.md **全文**代行调度；未经同意不得代行。
 
-Do not run reviewer and answerer concurrently. Do not let the coordinator edit either Markdown file, invent conclusions, change statuses, or commit a round.
+### 5. 合并
 
-## Require result envelopes
-
-Require workers to end each turn with one machine-readable fenced block.
-
-```yaml
-REVIEW_RESULT:
-  phase: scan | verify | complete
-  round: 1
-  branch: review/example
-  head_commit: "<hash>"
-  added_issue_ids: [R001]
-  open_issue_ids: [R001]
-  closed_issue_ids: []
-  next_action: answer | review_next_round | stop
-```
-
-```yaml
-ANSWER_RESULT:
-  round: 1
-  branch: review/example
-  head_commit: "<hash-before-round-commit>"
-  answered_issue_ids: [R001]
-  pending_review_issue_ids: [R001]
-  blocked_issue_ids: []
-  next_action: review_verify
-```
-
-Treat a missing, malformed, or contradictory envelope as an incomplete agent step.
-
-## Recover agents
-
-When an agent errors, times out, is interrupted, or exits without a valid result:
-
-1. Resume the same agent thread with the last completed phase, current branch, `HEAD`, document paths, round number, open issue IDs, and its incomplete responsibility.
-2. Do not advance the state machine.
-3. If the same thread cannot continue, start a replacement of the same agent type and provide the full handoff context.
-4. Never substitute the coordinator or the other worker type.
-
-## Validate and commit
-
-Before every round commit, have the reviewer run:
-
-```bash
-python3 .agents/skills/technical-doc-review/scripts/validate_review.py \
-  <document-name>.md review-<document-name>.md --mode round
-```
-
-Commit one complete round:
-
-```bash
-git add <document-name>.md review-<document-name>.md
-git commit -m "docs(<document-name>): complete review round <round-number>"
-```
-
-Do not use `git add .`. A round commit must contain both documents and no unrelated files.
-
-Git commits cannot contain their own hash. For fields that refer to the commit containing the field, write `本记录所在 Commit`; resolve the exact hash with `git log`, as defined in the protocol.
-
-## Finish
-
-Allow the reviewer to append `Review Completed` only when every completion gate in the protocol passes. Then require:
-
-```bash
-python3 .agents/skills/technical-doc-review/scripts/validate_review.py \
-  <document-name>.md review-<document-name>.md --mode complete
-```
-
-The reviewer commits the final round before returning `phase: complete`. The coordinator then reports the branch and final commit and stops.
-
-Merge only when the caller authorizes it and repository policy permits it. Use the repository's merge procedure; when the `merge-worktree` skill applies, follow it. Keep the review document in `main`.
+默认不合并。仅当用户明确授权且仓库策略允许时，用仓库流程（适用时 `merge-worktree`）。

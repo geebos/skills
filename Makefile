@@ -1,4 +1,4 @@
-.PHONY: add sync
+.PHONY: add sync sync-agents
 
 SKILLS_NPM_CACHE ?= $(if $(TMPDIR),$(TMPDIR),/tmp/)skills-npm-cache
 SYNC_HOME ?= $(HOME)
@@ -30,6 +30,14 @@ sync:
 	ln -sfn ../.agents/AGENTS.md "$(SYNC_HOME)/.claude/claude.md"
 	ln -sfn ../.agents/AGENTS.md "$(SYNC_HOME)/.pi/AGENTS.md"
 	npm_config_cache="$(SKILLS_NPM_CACHE)" npx --yes skills update --global --yes
+
+# Copy the project's AGENTS.md into ~/.agents and link Pi/Claude to it
+sync-agents:
+	@mkdir -p "$(SYNC_HOME)/.agents" "$(SYNC_HOME)/.claude" "$(SYNC_HOME)/.pi"
+	@cp AGENTS.md "$(SYNC_HOME)/.agents/AGENTS.md"
+	@ln -sfn ../.agents/AGENTS.md "$(SYNC_HOME)/.claude/claude.md"
+	@ln -sfn ../.agents/AGENTS.md "$(SYNC_HOME)/.pi/AGENTS.md"
+	@echo "synced AGENTS.md to $(SYNC_HOME)/.agents"
 
 %:
 	@:

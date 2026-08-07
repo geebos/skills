@@ -24,6 +24,12 @@ assert_equal() {
   fi
 }
 
+assert_ref_absent() {
+  if git -C "$1" show-ref --verify --quiet "refs/heads/$2"; then
+    fail "expected branch '$2' to be deleted"
+  fi
+}
+
 configure_repo() {
   git -C "$1" config user.name "Merge Worktree Test"
   git -C "$1" config user.email "merge-worktree@example.com"
@@ -33,6 +39,7 @@ test_single_worktree_merge() {
   local repo="$test_root/single"
   local output="$test_root/single.out"
   local main_before
+  local dev_tree
 
   git init -q -b main "$repo"
   configure_repo "$repo"
@@ -45,6 +52,7 @@ test_single_worktree_merge() {
   printf 'change\n' >"$repo/change.txt"
   git -C "$repo" add change.txt
   git -C "$repo" commit -q -m development
+  dev_tree=$(git -C "$repo" rev-parse 'dev/single^{tree}')
 
   (
     cd "$repo"
@@ -58,7 +66,8 @@ test_single_worktree_merge() {
   assert_equal "$(git -C "$repo" rev-parse main^)" "$main_before"
   assert_equal \
     "$(git -C "$repo" rev-parse 'main^{tree}')" \
-    "$(git -C "$repo" rev-parse 'dev/single^{tree}')"
+    "$dev_tree"
+  assert_ref_absent "$repo" dev/single
   test -z "$(git -C "$repo" for-each-ref --format='%(refname)' refs/heads/merge-worktree/)"
   test -z "$(git -C "$repo" status --porcelain)"
   test ! -d "$repo/.git/merge-worktree.lock"
@@ -69,6 +78,7 @@ test_main_worktree_merge() {
   local dev_repo="$test_root/multi-dev"
   local output="$test_root/multi.out"
   local main_before
+  local dev_tree
 
   git init -q -b main "$main_repo"
   configure_repo "$main_repo"
@@ -81,6 +91,7 @@ test_main_worktree_merge() {
   printf 'change\n' >"$dev_repo/change.txt"
   git -C "$dev_repo" add change.txt
   git -C "$dev_repo" commit -q -m development
+  dev_tree=$(git -C "$dev_repo" rev-parse 'dev/multi^{tree}')
 
   (
     cd "$dev_repo"
@@ -89,11 +100,12 @@ test_main_worktree_merge() {
 
   grep -q '^MODE=main-worktree$' "$output"
   assert_equal "$(git -C "$main_repo" branch --show-current)" "main"
-  assert_equal "$(git -C "$dev_repo" branch --show-current)" "dev/multi"
+  assert_equal "$(git -C "$dev_repo" branch --show-current)" ""
   assert_equal "$(git -C "$main_repo" rev-parse main^)" "$main_before"
   assert_equal \
     "$(git -C "$main_repo" rev-parse 'main^{tree}')" \
-    "$(git -C "$dev_repo" rev-parse 'dev/multi^{tree}')"
+    "$dev_tree"
+  assert_ref_absent "$main_repo" dev/multi
   test -z "$(git -C "$main_repo" for-each-ref --format='%(refname)' refs/heads/merge-worktree/)"
   test -z "$(git -C "$main_repo" status --porcelain)"
   test -z "$(git -C "$dev_repo" status --porcelain)"
@@ -105,6 +117,7 @@ test_primary_worktree_without_main_merge() {
   local other_repo="$test_root/primary-other"
   local output="$test_root/primary.out"
   local main_before
+  local dev_tree
 
   git init -q -b main "$root_repo"
   configure_repo "$root_repo"
@@ -114,6 +127,7 @@ test_primary_worktree_without_main_merge() {
   printf 'change\n' >"$root_repo/change.txt"
   git -C "$root_repo" add change.txt
   git -C "$root_repo" commit -q -m development
+  dev_tree=$(git -C "$root_repo" rev-parse 'dev/primary^{tree}')
   git -C "$root_repo" worktree add -q -b dev/other "$other_repo" main
 
   (
@@ -127,7 +141,8 @@ test_primary_worktree_without_main_merge() {
   assert_equal "$(git -C "$root_repo" rev-parse main^)" "$main_before"
   assert_equal \
     "$(git -C "$root_repo" rev-parse 'main^{tree}')" \
-    "$(git -C "$root_repo" rev-parse 'dev/primary^{tree}')"
+    "$dev_tree"
+  assert_ref_absent "$root_repo" dev/primary
   test -z "$(git -C "$root_repo" for-each-ref --format='%(refname)' refs/heads/merge-worktree/)"
   test -z "$(git -C "$root_repo" status --porcelain)"
   test -z "$(git -C "$other_repo" status --porcelain)"

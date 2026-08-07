@@ -1,277 +1,142 @@
-# Technical document review protocol
+# 技术文档评审
 
-## Contents
+对一份 Markdown 技术文档做追加-only 评审：问题、结论与状态都写在配对的评审文档里，技术文档本身收敛到唯一、明确、可执行、可验证的决策。
 
-1. Role boundaries
-2. Review model
-3. Technical-point standard
-4. Issue and status rules
-5. Append-only round schema
-6. Git semantics
-7. Recovery protocol
-8. Completion gates
+动手前先读完整份技术文档、评审文档，以及 [assets/review-document-template.md](../assets/review-document-template.md)。
 
-## 1. Role boundaries
+## 基本规则
 
-### Coordinator
+1. **只追加，不改历史。** 禁止删除、覆盖或改写已有段落；纠错用更正引用，原文保留。
+2. **只动指派的文件与轮次。** 不切换基线分支、不创建分支、不 `git pull` 基线。
+3. 工作分支应是 `review/*`。分支或工作区不对时停下来报告，不要自己改分支。
+4. 结论必须可执行、可验证。禁止「已确认」「后续处理」「实现时决定」这类空话。
+5. 正文、示例、表格、图、时序图、API、附录、配置、伪代码要一致；冲突要么记成问题，要么在结论里消掉。
+6. 影响行为、边界或验收时，不要留下未约束的模糊词：可以、建议、推荐、尽量、原则上、视情况而定、按需处理、根据实际情况决定、必要时、合理设置、适当调整、后续确定。要写就带上客观条件，且每个条件只有一种结果。
+7. 每步结束按任务要求输出 YAML 结果块；缺字段、格式错或与仓库事实不符，本步算没做完。
 
-The coordinator may create, resume, replace, message, wait for, and stop agents. It passes factual state only: paths, branch, commits, round, issue IDs, completed phase, and worker outputs.
+## 评审模型
 
-It must not:
+评审文档是事件日志，只追加：
 
-- identify or write review findings;
-- answer an issue or select a technical solution;
-- edit either document;
-- verify a solution;
-- change an issue status;
-- decide that an issue is closed;
-- create the round commit.
+- 新问题首次出现时写完整定义；ID 从 `R001` 起单调递增。
+- 技术结论 ID 从 `C001` 起单调递增。
+- 之后的 Answer、Review、更正、状态变化都追加在**当前轮**对应问题下。
+- 问题当前状态看 `### 状态变更` 里该 ID 的最后一次迁移；没有状态事件时看问题定义里的状态。
+- 写错过用：`> 更正记录（Round N）：…原记录保留。`
 
-### Review Agent
+状态：
 
-The Review Agent owns review judgment, the review record, verification, and the round commit. It must inspect the current technical document on every scan and inspect the actual document diff on every verification.
+| 终态 | 非终态 |
+|------|--------|
+| `已关闭` | `待处理`、`处理中`、`已回复`、`已修改`、`部分处理`、`暂不处理`、`待复核`、`需进一步确认` |
 
-It must not edit the technical document, overwrite history, accept an answer without checking the document, or close an issue with missing boundaries or verification.
+`已关闭` 只能出现在 `##### Review` 的最终状态，以及据此写的 `### 状态变更`。其它地方不要把问题标成已关闭。
 
-### Answer Agent
+## 技术点怎么拆
 
-The Answer Agent owns technical conclusions and technical-document edits. It appends answer events to the review document but never overwrites earlier records.
+按**独立实现决策**拆，例如：鉴权、字段/schema、超时、重试、错误处理、事务边界、一致性、缓存、降级、部署、日志、数据保留。不要把多个决策糊成一句空话。
 
-It must not close issues, write reviewer conclusions, create the round commit, or respond only with acknowledgements such as “已确认”, “后续处理”, or “实现时决定”.
+每条生效结论都要写清：
 
-## 2. Review model
+1. 采用什么  
+2. 不采用什么（或明确没有备选）  
+3. 适用哪里  
+4. 不适用哪里  
+5. 前置条件  
+6. 关键约束  
+7. 错误 / 失败 / 降级时怎么办  
+8. 怎么验证或验收  
 
-Treat the review document as an append-only event log.
+关键决策在收工前不能悬空。暂时定不了就写全：问题与状态、定不了的原因、候选与差异、责任人、截止时间、还缺什么输入、临时结论；要豁免就写例外原因和后续怎么跟。少一项不算数。`部分处理`、`暂不处理`、`需进一步确认` 都不是做完。
 
-- Define a new issue exactly once under the round that discovered it.
-- Never reuse an issue ID.
-- Append later answers, verification results, corrections, and status transitions under the current round.
-- Derive the current issue status from its latest status event.
-- Correct historical errors with a new correction event. Never edit the old event.
-- Start issue IDs at `R001` and increase monotonically.
-- Start conclusion IDs at `C001` and increase monotonically.
+## 问题与记录字段
 
-Use these terminal states:
+### 问题定义 `#### R00x：标题`
 
-- `已关闭`
+写清：技术点、提出 Commit、当前描述、问题、风险、Review 建议、必须明确的结论、状态（新问题用 `待处理`）。
 
-Use these non-terminal states:
+### `##### Answer`
 
-- `待处理`
-- `处理中`
-- `已回复`
-- `已修改`
-- `部分处理`
-- `暂不处理`
-- `待复核`
-- `需进一步确认`
+写清：最终结论、不采用方案、适用范围、不适用范围、前置条件、关键约束、异常处理、验证方式、修改位置、修改内容、状态（做成了用 `待复核`；卡住用非终态并写阻塞信息）。
 
-Only the reviewer may append a transition to `已关闭`.
+这一段里：
 
-## 3. Technical-point standard
+- 不要写 `##### Review`
+- 不要把状态写成 `已关闭`
+- 不要 `git commit`、不要切分支
 
-Split the document by independent implementation decisions. Typical independent points include:
+### `##### Review`
 
-- authentication method;
-- field type or schema rule;
-- timeout;
-- retry trigger, count, and interval;
-- error handling;
-- transaction boundary;
-- consistency model;
-- cache location and expiry;
-- dependency failure or degradation;
-- deployment topology;
-- log content and retention;
-- data retention period.
+写清：结论是否唯一 / 明确 / 可执行 / 可验证、适用范围和前置是否清楚、约束和异常是否完整、Answer 是否与技术文档一致、有没有冲突或新冲突、复核结论、后续要求、最终状态。关闭时关闭 Commit 写 `当前记录所在 Commit`。
 
-Do not combine separate decisions into a vague umbrella statement.
+下列情况**不要**标 `已关闭`：技术文档没改、还剩备选、措辞仍可裁量、范围缺、要靠实现时再判断、表述冲突、没写验证方式、Answer 和 diff 对不上。
 
-For every technical point, require one currently effective conclusion that states:
+新发现的问题用新 ID，不要塞进旧问题。
 
-1. adopted solution;
-2. rejected solution or explicitly states that no alternative is in scope;
-3. applicable scope;
-4. non-applicable scope;
-5. prerequisites;
-6. key constraints;
-7. error, failure, and degradation behavior;
-8. verification or acceptance method.
+### 汇总
 
-Flag expressions such as `可以`, `建议`, `推荐`, `尽量`, `原则上`, `视情况而定`, `按需处理`, `根据实际情况决定`, `必要时`, `合理设置`, `适当调整`, and `后续确定` when they affect behavior, boundaries, or acceptance. Permit them only when followed by objective conditions and one deterministic outcome for every condition.
+- `### 本轮技术结论`：`C00x` 及关联问题  
+- `### 状态变更`：`* R00x：旧 → … → 新`  
+- `### 未关闭问题`：仍未关闭的 ID；没有就 `* 无`
 
-Cross-check body text, examples, tables, diagrams, sequence diagrams, API definitions, appendices, configuration examples, and pseudocode. A conflict in any representation is a review issue.
-
-### Undecided points
-
-A key decision must not remain undecided at completion. Before completion, an undecided point must record:
-
-- question and current status;
-- why it cannot yet be decided;
-- candidates and their differences;
-- accountable owner;
-- decision deadline;
-- required inputs;
-- temporary conclusion;
-- exception reason and follow-up process, if an explicit exemption is requested.
-
-Missing owner, deadline, required input, or temporary conclusion is invalid. `部分处理`, `暂不处理`, and `需进一步确认` always continue into the next round.
-
-## 4. Issue and status rules
-
-Every new issue definition must contain:
-
-- issue ID and title;
-- technical point;
-- discovery round;
-- discovery commit;
-- current document wording;
-- problem;
-- risk or impact;
-- reviewer recommendation;
-- deterministic conclusion required;
-- initial status `待处理`.
-
-Every Answer event must contain:
-
-- round;
-- final technical conclusion;
-- rejected solution;
-- applicable and non-applicable scope;
-- prerequisites;
-- exception or degradation behavior;
-- verification method;
-- document edit locations;
-- exact edit summary;
-- resulting status `待复核`, or a documented non-terminal blocker.
-
-Every verification event must contain:
-
-- round;
-- whether the conclusion is unique, explicit, executable, and verifiable;
-- whether scope, prerequisites, constraints, and failures are complete;
-- whether conflicts remain;
-- whether the Answer record matches the document;
-- whether new conflicts were introduced;
-- verification conclusion and next requirement;
-- final status;
-- closing commit reference when closed.
-
-The reviewer must not close an issue when the document was not edited, alternatives remain, wording is still discretionary, scope is missing, implementation judgment is required, representations conflict, or verification is unspecified.
-
-Create a new issue ID for a newly discovered problem. Do not hide it inside an existing issue.
-
-## 5. Append-only round schema
-
-Append exactly one top-level section per round:
+## 文档结构
 
 ```markdown
-## Review Round N
+# Review：`<document-name>.md`
 
-- Review 起始 Commit：<hash>
-- 本轮完成 Commit：本记录所在 Commit
-- Review Agent：technical_doc_reviewer
-- Answer Agent：technical_doc_answerer
-- 当前技术文档版本：<hash-before-round>
+## 基本信息
+* 技术文档 / Review 文档 / Review 分支 / 基准分支
+* Review Agent / Answer Agent
 
-### 本轮新增问题
-### 本轮确定的技术结论
-### 历史问题状态变更
-### Answer 处理记录
-### Review 复核结论
-### 本轮未关闭问题
+## Round N
+* 起始 Commit / 技术文档 Commit / 完成 Commit：当前记录所在 Commit
+
+### 新增问题
+#### R00x：标题
+* …
+##### Answer
+* …
+##### Review
+* …
+
+### 本轮技术结论
+### 状态变更
+### 未关闭问题
+
+## Review 完成
 ```
 
-Keep all seven subsections even when a subsection contains only `- 无`.
+- 每个 `## Round N` 都要有四个 `###`；空着就写 `* 无`。
+- Answer / Review 挂在对应 `#### R00x` 下面。
+- 以后轮次可以对旧 ID 再写一个 `#### R00x：…` 锚点，只追加新的 Answer/Review，不要改首次定义。
+- 指「本 commit」的地方写 `当前记录所在 Commit`。
 
-In a later round, do not duplicate an issue definition. Append new Answer and verification events keyed by its existing issue ID.
+## 校验与提交
 
-Use a correction event:
-
-```markdown
-> 更正记录（Round N）：Round 1 中 R003 的文档修改位置记录有误；正确位置为“缓存失效策略”章节。原记录保留。
-```
-
-The final round may append:
-
-```markdown
-## Review Completed
-
-- 最终状态：已完成
-- 总 Review 轮次：N
-- 已审阅技术点数量：<count>
-- 已确定技术结论数量：<count>
-- 已关闭问题数量：<count>
-- 未决技术点数量：0
-- 最终技术文档 Commit：本次最终轮次 Commit
-- 最终 Review 文档 Commit：本记录所在 Commit
-- 完成时间：<ISO-8601 timestamp with timezone>
-```
-
-## 6. Git semantics
-
-### Branch
-
-Start from the latest allowed base branch and use `review/<document-name>`. Both workers remain in the same worktree and branch. Run them sequentially.
-
-### Round commit
-
-The reviewer creates the commit only after scan, answer, document edit, verification, record append, and status update all finish. Stage only the technical document and its review document.
-
-Use:
-
-```text
-docs(<document-name>): complete review round <N>
-```
-
-Do not squash multiple rounds on the review branch. The branch history and review event log jointly form the audit record.
-
-### Self-referential commit fields
-
-A Git commit hash covers the file content, so a file cannot contain the hash of the commit that contains that file. Use:
-
-- `本记录所在 Commit` for a closing or review-document commit field;
-- `本次最终轮次 Commit` for the last commit that changes the technical document.
-
-Resolve either value after commit with:
+分支已经是 `review/<document-name>` 时再提交。提交前：本轮 Answer/Review 写完、状态汇总完、结构校验通过。
 
 ```bash
-git log -1 --format=%H -- review-<document-name>.md
-git log -1 --format=%H -- <document-name>.md
+python3 .agents/skills/technical-doc-review/scripts/validate_review.py \
+  <document-name>.md review-<document-name>.md --mode round
+
+git add <document-name>.md review-<document-name>.md
+git commit -m "docs(<document-name>): complete review round <N>"
 ```
 
-This symbolic value is a deterministic reference, not a placeholder.
+不要 `git add .`，不要把多轮 squash 成一次。提交后可用 `git log -1 --format=%H -- <file>` 看真实 hash。
 
-## 7. Recovery protocol
+## 什么时候算完成
 
-The coordinator maintains a handoff snapshot after each valid worker result:
+同时满足再写 `## Review 完成` 并跑 complete 校验：
 
-```yaml
-document: path/to/name.md
-review_document: path/to/review-name.md
-branch: review/name
-round: 2
-head_commit: "<hash>"
-completed_phase: answer
-open_issue_ids: [R004]
-review_agent_thread: "<id>"
-answer_agent_thread: "<id>"
-```
+- 每个独立技术点都有一条生效结论  
+- 范围、前置、约束、失败路径、验证都写明了  
+- 各处表述一致  
+- 所有问题最新状态是 `已关闭`  
+- 再扫一遍没有新问题  
+- 每一轮都有对应 commit  
+- 已有 `## Review 完成`（字段见模板）  
+- 最终 commit 后工作区干净  
+- `validate_review.py --mode complete` 通过  
 
-On failure, first resume the original thread from the incomplete phase. If that thread is unavailable, start a new agent of the same type and pass the snapshot plus the latest valid result and current file state. An exception never completes a phase.
-
-## 8. Completion gates
-
-Only the reviewer may declare completion, and only when all are true:
-
-- every independent technical point has one effective conclusion;
-- all scopes, prerequisites, constraints, failures, and verification methods are explicit;
-- body, examples, tables, diagrams, APIs, appendices, configuration, and pseudocode agree;
-- every issue's latest state is `已关闭`;
-- a fresh scan finds no new issue;
-- every round has one complete round commit;
-- the completion block is appended;
-- the review branch has no uncommitted changes after the final commit;
-- the validator passes in `complete` mode.
-
-Completion does not authorize a merge. Follow repository policy and obtain any required user authorization.
+完成块里的数字要和文档对得上。完成不等于可以合并。

@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-07-26",
+  "dateYmd": "20260726",
+  "generatedAt": "2026-07-26T10:00:00Z",
+  "sites": [
+    {
+      "id": "linuxdo",
+      "label": "linux.do",
+      "badge": {
+        "dark": {
+          "bg": "#1a3a5c",
+          "fg": "#7db8e8"
+        },
+        "light": {
+          "bg": "#dbeafe",
+          "fg": "#1e5a9e"
+        }
+      }
+    },
+    {
+      "id": "v2ex",
+      "label": "V2EX",
+      "badge": {
+        "dark": {
+          "bg": "#3a3520",
+          "fg": "#e8c86d"
+        },
+        "light": {
+          "bg": "#fef3c7",
+          "fg": "#92600a"
+        }
+      }
+    },
+    {
+      "id": "jisilu",
+      "label": "集思录",
+      "badge": {
+        "dark": {
+          "bg": "#1e3a2a",
+          "fg": "#7dd8a0"
+        },
+        "light": {
+          "bg": "#dcfce7",
+          "fg": "#166534"
+        }
+      }
+    }
+  ],
+  "sourceNote": "由 linux.do、V2EX、集思录 3 个站点合并生成。",
+  "directionCards": [
+    {
+      "id": "dev",
+      "name": "开发与自建",
+      "summary": "收录 1 条，来源：linux.do。",
+      "events": [
+        {
+          "text": "拆解贴给出结构件细节",
+          "itemId": "linuxdo-2654204"
+        }
+      ]
+    },
+    {
+      "id": "life",
+      "name": "生活与效率",
+      "summary": "收录 1 条，来源：V2EX。",
+      "events": [
+        {
+          "text": "远程办公与看护冲突的经验讨论",
+          "itemId": "v2ex-1229854"
+        }
+      ]
+    },
+    {
+      "id": "finance",
+      "name": "投资与财经",
+      "summary": "收录 1 条，来源：集思录。",
+      "events": [
+        {
+          "text": "现金管理产品比较",
+          "itemId": "jisilu-523771"
+        }
+      ]
+    }
+  ],
+  "globalNotes": [
+    "集思录条目仅覆盖前 9 层，完整讨论以原帖为准。"
+  ],
+  "items": [
+    {
+      "id": "linuxdo-2654204",
+      "sourceId": "2654204",
+      "source": "linuxdo",
+      "title": "日方拆完宇树机器人，认输了",
+      "blurb": "拆解贴给出结构件细节",
+      "direction": "dev",
+      "directionName": "开发与自建",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://linux.do/t/topic/2654204"
+        }
+      ],
+      "coverage": "posts=9，scraped 9/9 · complete · scraped 9 cooked >= declared 9",
+      "coverageData": {
+        "declared_posts": 9,
+        "declared_replies": 8,
+        "declared_source": "list",
+        "list_posts": 9,
+        "page_posts": null,
+        "cooked_scraped": 9,
+        "comments_scraped": 8,
+        "cooked_limit": 9,
+        "status": "complete",
+        "note": "scraped 9 cooked >= declared 9",
+        "mismatch": false
+      },
+      "analysis": [
+        "帖子给出拆解后的结构件照片与装配顺序描述。评论区聚焦成本控制，但未提供 BOM 数据。"
+      ],
+      "validity": "仅帖内图片，未独立核验",
+      "conclusion": "可作为硬件成本讨论的参考起点。",
+      "tags": []
+    },
+    {
+      "id": "v2ex-1229854",
+      "sourceId": "1229854",
+      "source": "v2ex",
+      "title": "程序员能不能解决放暑假娃很吵",
+      "blurb": "远程办公与看护冲突的经验讨论",
+      "direction": "life",
+      "directionName": "生活与效率",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://www.v2ex.com/t/1229854"
+        }
+      ],
+      "coverage": "posts=24，scraped 9/24 · capped · declared 24 posts; scraped first 9 (COOKED_LIMIT=9); remaining 15 not fetched",
+      "coverageData": {
+        "declared_posts": 24,
+        "declared_replies": 23,
+        "declared_source": "topic_page",
+        "list_posts": 23,
+        "page_posts": 24,
+        "cooked_scraped": 9,
+        "comments_scraped": 8,
+        "cooked_limit": 9,
+        "status": "capped",
+        "note": "declared 24 posts; scraped first 9 (COOKED_LIMIT=9); remaining 15 not fetched",
+        "mismatch": true
+      },
+      "analysis": [
+        "讨论集中在错峰工作与物理隔音两类方案，均为个人经验，无量化结论。"
+      ],
+      "validity": "纯经验分享，无外部来源",
+      "conclusion": "参考价值有限，可作为远程办公排期的启发。",
+      "tags": []
+    },
+    {
+      "id": "jisilu-523771",
+      "sourceId": "523771",
+      "source": "jisilu",
+      "title": "现金理财求指导",
+      "blurb": "现金管理产品比较",
+      "direction": "finance",
+      "directionName": "投资与财经",
+      "links": [
+        {
+          "label": "主帖",
+          "url": "https://www.jisilu.cn/question/523771"
+        }
+      ],
+      "coverage": "posts=7，scraped 4/7 · partial · declared 7 but only scraped 4 posts (below limit 9) — DOM incomplete or paginated replies",
+      "coverageData": {
+        "declared_posts": 7,
+        "declared_replies": 6,
+        "declared_source": "topic_page",
+        "list_posts": 7,
+        "page_posts": 7,
+        "cooked_scraped": 4,
+        "comments_scraped": 3,
+        "cooked_limit": 9,
+        "status": "partial",
+        "note": "declared 7 but only scraped 4 posts (below limit 9) — DOM incomplete or paginated replies",
+        "mismatch": true
+      },
+      "analysis": [
+        "提问者比较了货基、同业存单与短债，回复倾向前两者。未给出实时收益率。"
+      ],
+      "validity": "收益率随市场变动，未核验实时数据",
+      "conclusion": "仅供了解产品类别，不构成投资建议。",
+      "tags": []
+    }
+  ],
+  "crossLinks": [],
+  "risks": [
+    "财经条目不构成投资建议。"
+  ]
+}

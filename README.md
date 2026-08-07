@@ -6,7 +6,7 @@ Personal agent skill management using the [skills](https://github.com/anomalyco/
 
 ### technical-doc-review
 
-Runs an append-only technical-document review with persistent Review and Answer agents, strict role separation, per-round commits, recovery rules, and structural validation. The Skill lives at [`.agents/skills/technical-doc-review`](.agents/skills/technical-doc-review); its project-scoped custom agents live at [`.codex/agents`](.codex/agents).
+以追加-only 方式运行技术文档评审：持久化 Review / Answer agent、严格角色分离、按轮次提交、恢复规则与结构校验。Skill 与自定义 agent 位于 [`.agents/skills/technical-doc-review`](.agents/skills/technical-doc-review)。
 
 ## Referenced Skills
 

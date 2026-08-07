@@ -90,6 +90,18 @@ printf 'pid=%s\nworktree=%s\nbranch=%s\n' \
   "$current_worktree" \
   "$current_branch" >"$lock_owner_file"
 
+print_final_status() {
+  git branch --show-current
+  echo "=== HEAD ==="
+  git log --oneline -1
+  echo "=== squash message ==="
+  git log -1 --format=%B
+  echo "=== 工作区状态 ==="
+  git status --short
+  echo "=== main 上还剩哪些提交（应与 main 合并前一致+1） ==="
+  git log --oneline main -1
+}
+
 if [ "$current_branch" = "main" ]; then
   if git diff --cached --quiet; then
     echo "Main has no staged changes to commit." >&2
@@ -112,6 +124,8 @@ if [ "$current_branch" = "main" ]; then
   echo "MODE=direct-main"
   echo "MAIN_WORKTREE=$current_worktree"
   echo "COMMIT=$commit_sha"
+  echo
+  print_final_status
   exit 0
 fi
 
@@ -237,10 +251,19 @@ fi
 
 git -C "$main_worktree" branch -d "$temp_branch"
 
+if [ "$mode" = "main-worktree" ]; then
+  git switch --detach
+fi
+
+git -C "$dev_worktree" branch -D "$dev_branch"
+
 echo "MODE=$mode"
 echo "MAIN_WORKTREE=$main_worktree"
 echo "MAIN_REF=refs/heads/main"
 echo "DEV_WORKTREE=$dev_worktree"
 echo "DEV_BRANCH=$dev_branch"
+echo "DEV_BRANCH_DELETED=$dev_branch"
 echo "TEMP_BRANCH=$temp_branch"
 echo "COMMIT=$commit_sha"
+echo
+print_final_status

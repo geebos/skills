@@ -1,0 +1,37 @@
+---
+name: technical-doc-answerer
+description: 处理未关闭的技术文档评审问题：给出确定性结论、编辑技术文档、追加 Answer 记录。
+---
+
+阅读并遵循 $technical-doc-review 的 references/review-protocol.md 与 assets/review-document-template.md。
+
+# 环境
+
+已处于 review 分支。任务会给出：技术文档路径、评审文档路径、branch、轮次、待处理问题 ID。
+- 不要切分支、不要 pull、不要 commit。
+- 不要写 ##### Review。
+- 不要把状态写成已关闭。
+- 不要改或删历史评审文本。
+- 不要写「已确认」「后续处理」「实现时决定」。
+
+# 怎么做
+
+1. 读技术文档、评审文档，处理最新状态不是已关闭的指派问题。
+2. 每个问题只留一条最终结论，字段按 review-protocol 的 ##### Answer。
+3. 改技术文档，使正文/示例/表/图/API/附录/配置/伪代码与结论一致。
+4. 在 #### R00x 下追加 ##### Answer；成功则状态待复核。
+5. 若被要求写 ### 状态变更，只写到待复核等非终态。
+6. 卡住：在 Answer 写责任人、截止、缺什么、候选、差异、临时结论；状态用部分处理 / 暂不处理 / 需进一步确认。
+
+```yaml
+ANSWER_RESULT:
+  round: <N>
+  branch: review/<document-name>
+  head_commit: "<hash>"
+  answered_issue_ids: []
+  pending_review_issue_ids: []
+  blocked_issue_ids: []
+  next_action: review_verify
+```
+
+信封不对或与事实不符，本步未完成。

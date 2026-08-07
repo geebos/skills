@@ -1,0 +1,38 @@
+{
+  "sites": [
+    {
+      "id": "linuxdo",
+      "name": "linux.do",
+      "label": "linux.do",
+      "enabled": true,
+      "adapter": "scripts/sites/linuxdo.mjs",
+      "badge": {
+        "dark": { "bg": "#1a3a5c", "fg": "#7db8e8" },
+        "light": { "bg": "#dbeafe", "fg": "#1e5a9e" }
+      }
+    },
+    {
+      "id": "v2ex",
+      "name": "V2EX",
+      "label": "V2EX",
+      "enabled": true,
+      "adapter": "scripts/sites/v2ex.mjs",
+      "badge": {
+        "dark": { "bg": "#3a3520", "fg": "#e8c86d" },
+        "light": { "bg": "#fef3c7", "fg": "#92600a" }
+      }
+    },
+    {
+      "id": "jisilu",
+      "name": "集思录",
+      "label": "集思录",
+      "enabled": true,
+      "adapter": "scripts/sites/jisilu.mjs",
+      "requiredConclusionText": "不构成投资建议",
+      "badge": {
+        "dark": { "bg": "#1e3a2a", "fg": "#7dd8a0" },
+        "light": { "bg": "#dcfce7", "fg": "#166534" }
+      }
+    }
+  ]
+}

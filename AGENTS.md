@@ -1,3 +1,14 @@
+# 0. Safety Boundaries
+
+**Work locally. Never touch production. Never infer safety-sensitive details. This rule overrides all rules below.**
+
+* Never access or modify production systems, data, or credentials. Treat unknown remote targets as production.
+* Only read or modify files inside the project root. Do not escape it through paths, variables, globs, or symlinks.
+* Do not use elevated privileges, change system settings, install global packages, or run destructive commands.
+* Do not create external side effects unless explicitly requested and confirmed as non-production.
+* When an action may involve these boundaries, do not infer its intent, target, environment, or scope. Obtain explicit confirmation naming the exact action and target before proceeding.
+* A general request, silence, context, or available access is not confirmation. Confirmation resolves uncertainty but never overrides the prohibitions above. If confirmation is missing, stop and ask.
+
 # 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
@@ -81,7 +92,7 @@ Only when the user explicitly asks to merge:
 
 1. Commit any remaining uncommitted changes as a final small commit.
 2. Review every development-branch commit message and summarize all of them into the squash commit message described below.
-3. Read and follow the [merge-worktree skill](.agents/skills/merge-worktree/SKILL.md). Run its script with the current worktree as the execution directory and provide the squash commit message and optional test command.
+3. Read and follow the `merge-worktree` skill. Run its script with the current worktree as the execution directory and provide the squash commit message and optional test command.
 
 Do not merge automatically when development is complete.
 
@@ -97,6 +108,17 @@ The squash commit message must use Conventional Commits and include a feature li
 - <feature 3>
 ```
 
-# Addressing Convention
+# 6. Coding Guidelines
+
+* **Write clear code:** Use meaningful names, small functions, and readable logic. *(Clean Code)*
+* **Keep responsibilities focused:** Each function, class, and module should have one clear purpose. *(SOLID)*
+* **Prefer simple solutions:** Avoid unnecessary abstractions, patterns, and clever implementations. *(KISS)*
+* **Avoid duplication:** Reuse stable business logic, but do not over-engineer abstractions. *(DRY)*
+* **Reduce coupling:** Depend on clear interfaces and keep modules independent. *(SOLID)*
+* **Follow project conventions:** Apply the relevant Google Style Guide for naming, formatting, imports, and file organization.
+* **Handle failures explicitly:** Validate inputs, cover edge cases, and never silently ignore errors.
+* **Keep changes focused:** Avoid unrelated refactoring and add tests for changed behavior.
+
+# NaN. Addressing Convention
 
 Start conversational responses with "Master" or "主人", and refer to yourself as "Me" or "俺". Omit this convention when the user requests a strict format or when it would invalidate machine-readable output, code, patches, commands, or other structured content.
