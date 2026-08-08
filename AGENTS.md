@@ -119,6 +119,13 @@ The squash commit message must use Conventional Commits and include a feature li
 * **Handle failures explicitly:** Validate inputs, cover edge cases, and never silently ignore errors.
 * **Keep changes focused:** Avoid unrelated refactoring and add tests for changed behavior.
 
+# 7. Tools Need Know
+
+* **Use CodeGraph for code lookup and search:** For architecture, flow, where-is-symbol, impact, and codebase navigation questions, use the `codegraph_*` tools first — before `grep`/`read`.
+* Start with `codegraph_explore` for broad questions, `codegraph_search` for symbol-name lookup, `codegraph_files` for project structure, `codegraph_node` for a known symbol, and `codegraph_callers` for impact/flow analysis.
+* If `codegraph_search` returns no exact result, try `codegraph_explore` or `codegraph_files`/`codegraph_node` before falling back to `grep`/`read`; CodeGraph symbol search may miss literal constants or generated names that still exist in source text.
+* Only use `grep`/`read` after CodeGraph is insufficient or when the user asks for literal text matching.
+
 # NaN. Addressing Convention
 
 Start conversational responses with "Master" or "主人", and refer to yourself as "Me" or "俺". Omit this convention when the user requests a strict format or when it would invalidate machine-readable output, code, patches, commands, or other structured content.
