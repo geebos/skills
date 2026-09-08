@@ -1,71 +1,101 @@
 # 0. Safety Boundaries
+**Work locally by default. Only access remote or production systems when explicitly authorized. Never infer safety-sensitive details. This rule overrides all rules below.**
 
-**Work locally. Never touch production. Never infer safety-sensitive details. This rule overrides all rules below.**
-
-* Never access or modify production systems, data, or credentials. Treat unknown remote targets as production.
+* Never access or modify production systems, data, or credentials unless explicitly authorized. Treat unknown remote targets as production.
 * Only read or modify files inside the project root. Do not escape it through paths, variables, globs, or symlinks.
 * Do not use elevated privileges, change system settings, install global packages, or run destructive commands.
-* Do not create external side effects unless explicitly requested and confirmed as non-production.
+* Do not create external side effects unless explicitly requested and authorized for the specified target.
 * When an action may involve these boundaries, do not infer its intent, target, environment, or scope. Obtain explicit confirmation naming the exact action and target before proceeding.
-* A general request, silence, context, or available access is not confirmation. Confirmation resolves uncertainty but never overrides the prohibitions above. If confirmation is missing, stop and ask.
+* A general request, silence, context, or available access is not confirmation. Confirmation resolves uncertainty and may authorize access to the explicitly named remote or production target, but does not authorize actions beyond that scope. If confirmation is missing, stop and ask.
 
-# 1. Think Before Coding
+# 1. Orient Before Acting
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+**Understand the problem before changing anything.**
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+Maintain a compact model of:
 
-# 2. Simplicity First
+* **Goal** — what success looks like
+* **Facts** — what is known
+* **Hypotheses** — plausible explanations or approaches
+* **Unknowns** — what could materially change the solution
 
-**Minimum code that solves the problem. Nothing speculative.**
+Do not silently assume. If ambiguity matters, surface it.
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+When multiple interpretations exist, compare them before choosing.
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+Resolve **high-impact, upstream uncertainties first**. Prefer the next question, read, or tool call that provides the most information.
 
-# 3. Surgical Changes
+Plan **coarse-to-fine**: understand the system first, implementation details second.
 
-**Touch only what you must. Clean up only your own mess.**
+# Prefer the Simplest Sufficient Solution
 
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
+**Solve exactly the requested problem with the least complexity.**
 
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+* No speculative features.
+* No unnecessary abstractions or configurability.
+* No handling of impossible scenarios.
+* Prefer existing primitives and patterns.
+* Push back when a simpler approach is sufficient.
 
-The test: Every changed line should trace directly to the user's request.
+If the solution feels overengineered, simplify it.
 
-# 4. Goal-Driven Execution
+# 2. Make Surgical Changes
 
-**Define success criteria. Loop until verified.**
+**Touch only what the task requires.**
 
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
+* Match the existing style and architecture.
+* Do not refactor unrelated code.
+* Do not clean up pre-existing issues unless asked.
+* Remove only dead code or dependencies created by your own changes.
 
-For multi-step tasks, state a brief plan:
+Every changed line should be traceable to the requested outcome.
+
+# 3. Execute Through Hypotheses and Verification
+
+**Turn work into testable claims, then loop until proven.**
+
+For each task:
+
+1. Define a concrete success criterion.
+2. Form the smallest useful hypothesis.
+3. Gather evidence or implement the minimal change.
+4. Verify the result.
+5. Update assumptions and replan if evidence disagrees.
+
+Examples:
+
+* Bug fix → reproduce it → fix it → prove the reproduction no longer fails.
+* Validation → define invalid cases → test them → make them pass.
+* Refactor → establish behavior before → change structure → verify behavior after.
+
+Treat conclusions as provisional. Evidence overrides prior assumptions.
+
+For multi-step work:
+
+```text
+1. Understand X → verify: ...
+2. Change Y      → verify: ...
+3. Validate Z    → verify: ...
 ```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+Periodically compress findings and narrow the search space instead of accumulating unchecked assumptions.
 
-# 5. Development Branch Workflow
+# 4. Prove System-Wide Claims
+
+**Local correctness does not automatically compose into global correctness.**
+
+For claims such as **safety, recovery, drain, quiescence, consistency, or shutdown**:
+
+1. State the required system invariant.
+2. Identify every path that can create, admit, mutate, or retain relevant work/state.
+3. Verify the invariant across all of them.
+4. Do not infer a global guarantee merely because individual components look correct.
+
+# 5. Core Loop
+
+> Orient → Hypothesize → Reduce Uncertainty → Plan → Execute Minimally → Verify → Replan
+
+# 6. Development Branch Workflow
 
 **This workflow does not create or remove worktrees. Keep the main worktree clean.**
 
@@ -108,7 +138,7 @@ The squash commit message must use Conventional Commits and include a feature li
 - <feature 3>
 ```
 
-# 6. Coding Guidelines
+# 7. Coding Guidelines
 
 * **Write clear code:** Use meaningful names, small functions, and readable logic. *(Clean Code)*
 * **Keep responsibilities focused:** Each function, class, and module should have one clear purpose. *(SOLID)*
@@ -118,13 +148,6 @@ The squash commit message must use Conventional Commits and include a feature li
 * **Follow project conventions:** Apply the relevant Google Style Guide for naming, formatting, imports, and file organization.
 * **Handle failures explicitly:** Validate inputs, cover edge cases, and never silently ignore errors.
 * **Keep changes focused:** Avoid unrelated refactoring and add tests for changed behavior.
-
-# 7. Tools Need Know
-
-* **Use CodeGraph for code lookup and search:** For architecture, flow, where-is-symbol, impact, and codebase navigation questions, use the `codegraph_*` tools first — before `grep`/`read`.
-* Start with `codegraph_explore` for broad questions, `codegraph_search` for symbol-name lookup, `codegraph_files` for project structure, `codegraph_node` for a known symbol, and `codegraph_callers` for impact/flow analysis.
-* If `codegraph_search` returns no exact result, try `codegraph_explore` or `codegraph_files`/`codegraph_node` before falling back to `grep`/`read`; CodeGraph symbol search may miss literal constants or generated names that still exist in source text.
-* Only use `grep`/`read` after CodeGraph is insufficient or when the user asks for literal text matching.
 
 # NaN. Addressing Convention
 
